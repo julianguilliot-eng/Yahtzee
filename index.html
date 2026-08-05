@@ -48,7 +48,8 @@
   }
 
   /* ---------- SIDEBAR : TABLEAU DE SCORES ---------- */
-  .sidebar{ position:sticky; top:0; align-self:start; height:100vh; padding:14px 14px 16px 18px; border-right:1px solid var(--line); background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05)); overflow-y:auto; display:flex; flex-direction:column; }
+  .sidebar{ position:sticky; top:0; align-self:start; height:100vh; padding:16px 14px 16px 18px; border-right:1px solid var(--line); background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05)); overflow-y:auto; display:flex; flex-direction:column; }
+  .score-title{ font-family:'Fraunces', serif; font-weight:600; font-style:italic; font-size:15px; letter-spacing:0.02em; color:var(--gold-bright); margin:0 0 10px 2px; flex-shrink:0; }
   .score-wrap{ border:1px solid var(--line); border-radius:9px; overflow:auto; background:rgba(0,0,0,0.15); max-width:100%; flex:1 1 auto; min-height:0; }
   table.score-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
   .score-table thead th{ position:sticky; top:0; z-index:2; background:var(--felt-dark); }
@@ -73,18 +74,17 @@
   .score-pick:active{ transform:translate(5px,-1px) scale(0.97); }
   .score-pick.zero{ background:rgba(0,0,0,0.3); color:rgba(246,239,225,0.55); border-color:var(--line); box-shadow:none;}
   .cell-ghost{ color:rgba(246,239,225,0.18); font-size:12px; }
-  .players-panel{margin-top:12px; flex-shrink:0;}
-  .panel-label{ font-family:'Space Mono', monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:rgba(246,239,225,0.45); margin-bottom:7px; }
-  .known-players{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
-  .chip{ font-family:'Space Mono', monospace; font-size:10px; border:1px solid var(--line); background:rgba(0,0,0,0.2); color:rgba(246,239,225,0.7); padding:4px 9px; border-radius:20px; display:flex; align-items:center; gap:5px; }
+  .chip{ font-family:'Space Mono', monospace; font-size:10px; border:1px solid var(--line); background:rgba(0,0,0,0.2); color:rgba(246,239,225,0.7); padding:4px 9px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; }
   .chip .best{color:var(--gold-bright);}
+  .known-players{ display:flex; flex-wrap:wrap; gap:6px; }
   .btn{ border:1px solid var(--line); background:rgba(0,0,0,0.2); color:var(--ivory); padding:7px 11px; border-radius:8px; font-size:11.5px; font-weight:600; transition:all .15s ease; letter-spacing:0.01em; }
   .btn:hover{border-color:var(--gold); background:rgba(205,165,72,0.1);}
   .btn.gold{ background:var(--gold); color:var(--ink); border-color:var(--gold);}
   .btn.gold:hover{ background:var(--gold-bright);}
   .btn.ghost{background:transparent;}
   .btn:disabled{opacity:.35; cursor:not-allowed;}
-  .new-game-btn{width:100%; margin-top:10px; padding:9px;}
+  .new-game-btn-top{ font-size:11px; padding:8px 14px; border-radius:20px; background:rgba(6,20,15,0.45); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+  .new-game-btn-top:hover{ background:rgba(6,20,15,0.6); }
 
   /* ---------- MAIN : plein écran, sans cadre ---------- */
   .main{ position:relative; height:100vh; overflow:hidden; }
@@ -162,12 +162,8 @@
 
 <div class="app">
   <aside class="sidebar">
+    <div class="score-title">Scores</div>
     <div class="score-wrap" id="scoreWrap"></div>
-    <div class="players-panel">
-      <div class="panel-label">Joueurs connus</div>
-      <div class="known-players" id="knownPlayers"></div>
-      <button class="btn ghost new-game-btn" id="newGameBtn">↺ Nouvelle partie</button>
-    </div>
   </aside>
 
   <main class="main" id="main">
@@ -183,6 +179,7 @@
         <div class="hud-right">
           <div class="hud-round" id="hudRound">Manche 1 / 13</div>
           <button class="fs-btn" id="fullscreenBtn" title="Plein écran">⛶</button>
+          <button class="btn ghost new-game-btn-top" id="newGameBtn">↺ Nouvelle partie</button>
         </div>
       </div>
       <div class="hud-turn"><span class="dot"></span><span class="who" id="turnWho"></span><span class="lbl">au tour de jouer</span></div>
@@ -303,7 +300,6 @@ function throwSound(){ for(let i=0;i<3;i++) setTimeout(()=>thud(0.35+Math.random
 function bounceTick(strength){ thud(Math.max(0.12, Math.min(1, strength))); }
 
 const scoreWrapEl = document.getElementById("scoreWrap");
-const knownPlayersEl = document.getElementById("knownPlayers");
 const setupScreenEl = document.getElementById("setupScreen");
 const gameScreenEl = document.getElementById("gameScreen");
 const endScreenEl = document.getElementById("endScreen");
@@ -370,14 +366,6 @@ scoreWrapEl.addEventListener("click", (e)=>{
   chooseCategory(btn.getAttribute("data-cat"));
 });
 
-function renderKnownPlayers(){
-  const names = Object.keys(profiles).sort((a,b)=> (profiles[b].best - profiles[a].best));
-  if(names.length===0){ knownPlayersEl.innerHTML = `<span style="font-size:11.5px;color:rgba(246,239,225,0.35);font-family:'Space Mono',monospace;">Aucun historique pour l'instant.</span>`; return; }
-  knownPlayersEl.innerHTML = names.map(n=>{
-    const p = profiles[n];
-    return `<span class="chip">${escapeHtml(n)} <span class="best">★ ${p.best}</span></span>`;
-  }).join("");
-}
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
 
 function showScreen(name){
@@ -518,6 +506,9 @@ function renderEndScreen(){
         ${ranked.map((p,i)=>`<div class="row ${i===0?'win':''}"><span>${i+1}. ${escapeHtml(p.name)}</span><span>${grandTotal(p)} pts</span></div>`).join("")}
       </div>
       <button class="btn gold" id="playAgainBtn" style="padding:12px 28px;">Rejouer avec ces joueurs</button>
+      <div style="margin-top:14px;">
+        <button class="btn ghost" id="newGameEndBtn" style="padding:8px 16px;font-size:11.5px;">↺ Nouvelle partie (autres joueurs)</button>
+      </div>
     </div>
   `;
   document.getElementById("playAgainBtn").onclick = ()=>{
@@ -527,13 +518,15 @@ function renderEndScreen(){
     resetDiceForNewTurn();
     renderAll();
   };
+  document.getElementById("newGameEndBtn").onclick = startNewGameFlow;
 }
-document.getElementById("newGameBtn").onclick = async ()=>{
+async function startNewGameFlow(){
   state = null; setupNames = [];
   try{ await window.storage.delete(STORAGE_GAME_KEY, false); }catch(e){}
   renderAll();
-};
-function renderAll(){ renderScoreTable(); renderKnownPlayers(); renderMain(); }
+}
+document.getElementById("newGameBtn").onclick = startNewGameFlow;
+function renderAll(){ renderScoreTable(); renderMain(); }
 
 /* ============================================================
    MOTEUR PHYSIQUE 3D — dés qui roulent vraiment sur la table
@@ -545,15 +538,15 @@ let sceneActive = false;
 let sceneReady = false;
 
 const GRAVITY = 15;
-const BOUND_X = 4.6, BOUND_Z = 2.35;
-const HELD_STRIP_W = 1.05;                 // largeur de la bande réservée aux dés mis de côté (à droite)
-const ROLL_MAX_X = BOUND_X - HELD_STRIP_W - 0.35; // mur invisible : les dés en jeu ne dépassent jamais cette limite
-const HELD_X = BOUND_X - HELD_STRIP_W/2 - 0.1;    // centre de la bande "dés gardés"
+const BOUND_X = 5.0, BOUND_Z = 2.5;
+const HELD_STRIP_W = 0.95;                 // largeur de la bande réservée aux dés mis de côté (à droite)
+const ROLL_MAX_X = BOUND_X - HELD_STRIP_W - 0.45; // mur invisible : les dés en jeu ne dépassent jamais cette limite
+const HELD_X = BOUND_X - HELD_STRIP_W/2 - 0.05;   // centre de la bande "dés gardés", collée au bord droit
 const ROLL_LEFT = -BOUND_X + 0.3;
 const ROLL_RIGHT = ROLL_MAX_X - 0.3;
 const ROLL_CENTER_X = (ROLL_LEFT + ROLL_RIGHT)/2;
 const FLOOR_Y = 0;
-const DIE_HALF = 0.44;
+const DIE_HALF = 0.5;
 const MIN_SEP = DIE_HALF*2.5;      // évite tout chevauchement visuel pendant le lancer
 const UP = new THREE.Vector3(0,1,0);
 
@@ -657,13 +650,13 @@ function ensureScene(){
   scene.add(rim2);
 
   // feutre — couleur plate identique au fond de la page (non affectée par l'éclairage), surface infinie sans bordure
-  const feltMat = new THREE.MeshBasicMaterial({ color:0x0f3d2e });
+  const feltMat = new THREE.MeshBasicMaterial({ color:0x0a2a20 });
   const felt = new THREE.Mesh(new THREE.PlaneGeometry(BOUND_X*6, BOUND_Z*6), feltMat);
   felt.rotation.x = -Math.PI/2;
   scene.add(felt);
   // grain de feutre très subtil, lui aussi en couleur plate pour rester fidèle
   const speckleGeo = new THREE.CircleGeometry(0.02, 6);
-  const speckleMat = new THREE.MeshBasicMaterial({ color:0x134432, transparent:true, opacity:0.35 });
+  const speckleMat = new THREE.MeshBasicMaterial({ color:0x0e3728, transparent:true, opacity:0.35 });
   const speckleMesh = new THREE.InstancedMesh(speckleGeo, speckleMat, 140);
   const dummy = new THREE.Object3D();
   for(let i=0;i<140;i++){
@@ -788,8 +781,8 @@ function fitCamera(){
   const distForH = halfD/Math.tan(fovRad/2);
   const distForW = halfW/(Math.tan(fovRad/2)*aspect);
   const dist = Math.max(distForH, distForW, 6) * 1.12;
-  camera.position.set(0, dist*0.82, dist*0.62);
-  camera.lookAt(0, -0.15, 0);
+  camera.position.set(0, dist*0.94, dist*0.34);
+  camera.lookAt(0, -0.1, 0);
   camera.updateProjectionMatrix();
 }
 
@@ -824,6 +817,10 @@ function toggleHold(idx){
   const d = diceStates[idx];
   if(!d.held){
     d.preHoldPos = d.pos.clone();
+    d.preHoldQuat = d.quat.clone();
+    d.targetQuat = canonicalQuatForValue(d.value);
+  } else {
+    d.targetQuat = null;
   }
   d.held = !d.held;
   state.held[idx] = d.held;
@@ -844,11 +841,10 @@ function updateHeldVisual(i){
 function layoutHeldSlots(){
   const heldIdx = [];
   for(let i=0;i<5;i++) if(state.held[i]) heldIdx.push(i);
-  const n = heldIdx.length;
-  const spacing = DIE_HALF*2.5;
+  const spacing = DIE_HALF*2.35;
+  const topZ = -BOUND_Z + DIE_HALF*1.7;   // colonne ancrée en haut de l'écran (loin de la caméra)
   heldIdx.forEach((idx,slot)=>{
-    const zOff = (slot-(n-1)/2)*spacing;
-    diceStates[idx].glideTarget = new THREE.Vector3(HELD_X, DIE_HALF, zOff);
+    diceStates[idx].glideTarget = new THREE.Vector3(HELD_X, DIE_HALF, topZ + slot*spacing);
   });
 }
 
@@ -860,6 +856,31 @@ function getTopValue(quat){
     if(dot>best){ best=dot; bestVal=f.val; bestNormal=worldN; }
   });
   return { value:bestVal, normal:bestNormal };
+}
+
+/* Orientation "bien droite" d'un dé pour une valeur donnée : face du haut alignée
+   ET les côtés parfaitement carrés avec la table (aucune rotation résiduelle). */
+const _mLocal = new THREE.Matrix4(), _mTarget = new THREE.Matrix4();
+function canonicalQuatForValue(value){
+  const face = FACE_DIRS.find(f=>f.val===value);
+  _mLocal.makeBasis(face.u, face.v, face.n);
+  _mTarget.makeBasis(new THREE.Vector3(0,0,-1), new THREE.Vector3(-1,0,0), new THREE.Vector3(0,1,0));
+  const mLocalInv = _mLocal.clone().transpose();
+  const m = _mTarget.clone().multiply(mLocalInv);
+  return new THREE.Quaternion().setFromRotationMatrix(m);
+}
+
+const NEUTRAL_OFFSETS = [
+  {dx:-1.22, dz:0.16, yaw:0.24},
+  {dx:-0.52, dz:-0.14, yaw:-0.32},
+  {dx:0.10, dz:0.20, yaw:0.15},
+  {dx:0.70, dz:-0.18, yaw:-0.20},
+  {dx:1.30, dz:0.10, yaw:0.28},
+];
+function staggeredQuatForValue(value, yaw){
+  const q = canonicalQuatForValue(value);
+  const yawQ = new THREE.Quaternion().setFromAxisAngle(UP, yaw);
+  return yawQ.multiply(q);
 }
 
 function launchDie(i){
@@ -878,12 +899,12 @@ function launchDie(i){
 
 function resetDiceForNewTurn(){
   if(!sceneReady) return;
-  const neutralX = [ROLL_CENTER_X-1.15, ROLL_CENTER_X-0.58, ROLL_CENTER_X, ROLL_CENTER_X+0.58, ROLL_CENTER_X+1.15];
   diceStates.forEach((d,i)=>{
-    d.held=false; d.settled=true; d.restTimer=0; d.value=1; d.glideTarget=null;
-    d.pos.set(neutralX[i], DIE_HALF, 0.4);
+    const o = NEUTRAL_OFFSETS[i];
+    d.held=false; d.settled=true; d.restTimer=0; d.value=1; d.glideTarget=null; d.targetQuat=null;
+    d.pos.set(ROLL_CENTER_X+o.dx, DIE_HALF, 0.32+o.dz);
     d.vel.set(0,0,0); d.angVel.set(0,0,0);
-    d.quat.identity();
+    d.quat.copy(staggeredQuatForValue(1, o.yaw));
     d.mesh.position.copy(d.pos);
     d.mesh.quaternion.copy(d.quat);
     updateHeldVisual(i);
@@ -892,15 +913,14 @@ function resetDiceForNewTurn(){
 
 function restoreDiceFromState(){
   if(!sceneReady || !state) return;
-  const neutralX = [ROLL_CENTER_X-1.15, ROLL_CENTER_X-0.58, ROLL_CENTER_X, ROLL_CENTER_X+0.58, ROLL_CENTER_X+1.15];
   diceStates.forEach((d,i)=>{
+    const o = NEUTRAL_OFFSETS[i];
     d.held = !!state.held[i];
-    d.settled = true; d.restTimer = 0; d.glideTarget = null;
+    d.settled = true; d.restTimer = 0; d.glideTarget = null; d.targetQuat = null;
     d.value = state.dice[i];
-    const face = FACE_DIRS.find(f=>f.val===d.value);
-    d.quat.setFromUnitVectors(face.n.clone(), UP);
-    d.pos.set(neutralX[i], DIE_HALF, 0.4);
+    d.pos.set(ROLL_CENTER_X+o.dx, DIE_HALF, 0.32+o.dz);
     d.vel.set(0,0,0); d.angVel.set(0,0,0);
+    d.quat.copy(d.held ? canonicalQuatForValue(d.value) : staggeredQuatForValue(d.value, o.yaw));
     d.mesh.position.copy(d.pos);
     d.mesh.quaternion.copy(d.quat);
     updateHeldVisual(i);
@@ -913,7 +933,7 @@ function restoreDiceFromState(){
     }
   });
   layoutHeldSlots();
-  diceStates.forEach(d=>{ if(d.glideTarget){ d.pos.copy(d.glideTarget); d.mesh.position.copy(d.pos); d.glideTarget=null; } });
+  diceStates.forEach(d=>{ if(d.glideTarget){ d.pos.copy(d.glideTarget); d.mesh.position.copy(d.pos); d.mesh.quaternion.copy(d.quat); d.glideTarget=null; } });
 }
 
 function doRoll(){
@@ -1065,6 +1085,13 @@ function updateSelectionEffects(dt, elapsed){
     // léger agrandissement du dé lorsqu'il est sélectionné
     d.curScale = THREE.MathUtils.lerp(d.curScale, d.targetScale, Math.min(1, dt*9));
     d.mesh.scale.setScalar(d.curScale);
+
+    // redressement en douceur vers une orientation bien droite dans la zone réservée
+    if(d.targetQuat){
+      d.quat.slerp(d.targetQuat, Math.min(1, dt*7));
+      d.mesh.quaternion.copy(d.quat);
+      if(d.quat.angleTo(d.targetQuat) < 0.01){ d.quat.copy(d.targetQuat); d.mesh.quaternion.copy(d.quat); d.targetQuat = null; }
+    }
 
     // halo doré au sol, pulsant doucement, toujours à plat quelle que soit l'orientation du dé
     if(!d.halo) return;
