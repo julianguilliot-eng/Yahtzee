@@ -61,8 +61,8 @@
   .score-table td.cell.empty{ color:rgba(246,239,225,0.25); }
   .score-table td.cell.choosable{ min-width:56px; padding-right:8px; }
   .score-table tr.section-divider td{ border-bottom:1px solid var(--line); padding:0; height:1px; }
-  .score-table tr.subtotal td, .score-table tr.total-row td{ background:rgba(0,0,0,0.22); font-weight:700; }
-  .score-table tr.total-row td{ background:rgba(205,165,72,0.16); color:var(--gold-bright); font-size:12.5px; border-top:1px solid var(--gold); }
+  .score-table tr.subtotal td, .score-table tr.total-row td{ background:#0d251c; font-weight:700; }
+  .score-table tr.total-row td{ position:sticky; bottom:0; z-index:2; background:#1c1305; color:var(--gold-bright); font-size:12.5px; border-top:1px solid var(--gold); box-shadow:0 -6px 10px -6px rgba(0,0,0,0.5); }
   .cat-hint{ display:block; font-size:8.5px; color:rgba(246,239,225,0.32); font-weight:400; margin-top:0px; }
   .score-pick{
     font-family:'Space Mono', monospace; font-weight:700; font-size:10px; padding:2px 6px; min-width:20px; border-radius:5px; border:1px solid var(--gold);
@@ -124,6 +124,11 @@
     background: radial-gradient(ellipse at 50% 42%, transparent 60%, rgba(6,20,15,0.22) 100%);
   }
   .loading3d{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Space Mono', monospace; font-size:11px; color:rgba(246,239,225,0.4); letter-spacing:0.1em; z-index:4; }
+  .hud-held{
+    position:absolute; transform:translate(-50%,-140%); z-index:5; pointer-events:none;
+    font-family:'Space Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:rgba(233,200,116,0.55); white-space:nowrap;
+  }
 
   .hud-top{ position:absolute; top:22px; left:28px; right:28px; display:flex; justify-content:space-between; align-items:flex-start; z-index:6; pointer-events:none; }
   .hud-title{ font-family:'Fraunces', serif; font-weight:700; font-style:italic; font-size:24px; text-shadow:0 3px 14px rgba(0,0,0,0.55); }
@@ -169,7 +174,10 @@
     <div id="setupScreen" class="screen-pad" style="display:none;"></div>
 
     <div id="gameScreen" class="game-screen" style="display:none;">
-      <div class="tray-3d" id="tray3d"><div class="loading3d" id="loading3d">Installation de la table…</div></div>
+      <div class="tray-3d" id="tray3d">
+        <div class="loading3d" id="loading3d">Installation de la table…</div>
+        <div class="hud-held" id="hudHeld">Dés gardés</div>
+      </div>
       <div class="hud-top">
         <div class="hud-title">Yahtzee</div>
         <div class="hud-right">
@@ -537,9 +545,15 @@ let sceneActive = false;
 let sceneReady = false;
 
 const GRAVITY = 15;
-const BOUND_X = 4.1, BOUND_Z = 2.35;
+const BOUND_X = 4.6, BOUND_Z = 2.35;
+const HELD_STRIP_W = 1.05;                 // largeur de la bande réservée aux dés mis de côté (à droite)
+const ROLL_MAX_X = BOUND_X - HELD_STRIP_W - 0.35; // mur invisible : les dés en jeu ne dépassent jamais cette limite
+const HELD_X = BOUND_X - HELD_STRIP_W/2 - 0.1;    // centre de la bande "dés gardés"
+const ROLL_LEFT = -BOUND_X + 0.3;
+const ROLL_RIGHT = ROLL_MAX_X - 0.3;
+const ROLL_CENTER_X = (ROLL_LEFT + ROLL_RIGHT)/2;
 const FLOOR_Y = 0;
-const DIE_HALF = 0.37;
+const DIE_HALF = 0.44;
 const MIN_SEP = DIE_HALF*2.5;      // évite tout chevauchement visuel pendant le lancer
 const UP = new THREE.Vector3(0,1,0);
 
@@ -555,6 +569,40 @@ const PIP_LAYOUTS = {
   1:[0,0,0,0,1,0,0,0,0], 2:[1,0,0,0,0,0,0,0,1], 3:[1,0,0,0,1,0,0,0,1],
   4:[1,0,1,0,0,0,1,0,1], 5:[1,0,1,0,1,0,1,0,1], 6:[1,0,1,1,0,1,1,0,1],
 };
+
+function createShadowTexture(){
+  const size = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const grad = ctx.createRadialGradient(size/2,size/2,0, size/2,size/2,size/2);
+  grad.addColorStop(0, "rgba(0,0,0,0.5)");
+  grad.addColorStop(0.7, "rgba(0,0,0,0.22)");
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,size,size);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.encoding = THREE.sRGBEncoding;
+  return tex;
+}
+
+function createGlowTexture(hex){
+  const size = 128;
+  const canvas = document.createElement("canvas");
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const c = new THREE.Color(hex);
+  const r = Math.round(c.r*255), g = Math.round(c.g*255), b = Math.round(c.b*255);
+  const grad = ctx.createRadialGradient(size/2,size/2,0, size/2,size/2,size/2);
+  grad.addColorStop(0, `rgba(${r},${g},${b},0.85)`);
+  grad.addColorStop(0.45, `rgba(${r},${g},${b},0.35)`);
+  grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,size,size);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.encoding = THREE.sRGBEncoding;
+  return tex;
+}
 
 function createRoundedBoxGeometry(size, radius, segments){
   const geo = new THREE.BoxGeometry(size, size, size, segments, segments, segments);
@@ -590,25 +638,16 @@ function ensureScene(){
   clock = new THREE.Clock();
 
   renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
   container.insertBefore(renderer.domElement, loading);
   if(loading) loading.remove();
 
-  // lumières
+  // lumières (uniquement pour les dés — le feutre reste en couleur plate, fidèle au fond de la page)
   scene.add(new THREE.HemisphereLight(0xbfe8d4, 0x0b2a1f, 0.55));
-  const ambient = new THREE.AmbientLight(0xfff2d8, 0.28);
+  const ambient = new THREE.AmbientLight(0xfff2d8, 0.32);
   scene.add(ambient);
-  const dirLight = new THREE.DirectionalLight(0xfff7e6, 1.15);
+  const dirLight = new THREE.DirectionalLight(0xfff7e6, 1.1);
   dirLight.position.set(3.4, 7.5, 3.8);
-  dirLight.castShadow = true;
-  dirLight.shadow.mapSize.set(1536,1536);
-  dirLight.shadow.camera.left=-6; dirLight.shadow.camera.right=6;
-  dirLight.shadow.camera.top=5; dirLight.shadow.camera.bottom=-5;
-  dirLight.shadow.bias = -0.0015;
   scene.add(dirLight);
   const rim = new THREE.PointLight(0xe9c874, 0.5, 14);
   rim.position.set(-3.5, 2.6, -2.4);
@@ -617,15 +656,14 @@ function ensureScene(){
   rim2.position.set(3.2, 2.2, 2.8);
   scene.add(rim2);
 
-  // feutre — même vert que le fond de la page, surface infinie, sans bordure visible
-  const feltMat = new THREE.MeshStandardMaterial({ color:0x0f3d2e, roughness:0.92, metalness:0.03 });
+  // feutre — couleur plate identique au fond de la page (non affectée par l'éclairage), surface infinie sans bordure
+  const feltMat = new THREE.MeshBasicMaterial({ color:0x0f3d2e });
   const felt = new THREE.Mesh(new THREE.PlaneGeometry(BOUND_X*6, BOUND_Z*6), feltMat);
   felt.rotation.x = -Math.PI/2;
-  felt.receiveShadow = true;
   scene.add(felt);
-  // texture de feutre subtile via variations de teinte (grille de petits cercles très légers)
+  // grain de feutre très subtil, lui aussi en couleur plate pour rester fidèle
   const speckleGeo = new THREE.CircleGeometry(0.02, 6);
-  const speckleMat = new THREE.MeshStandardMaterial({ color:0x144534, roughness:1, transparent:true, opacity:0.3 });
+  const speckleMat = new THREE.MeshBasicMaterial({ color:0x134432, transparent:true, opacity:0.35 });
   const speckleMesh = new THREE.InstancedMesh(speckleGeo, speckleMat, 140);
   const dummy = new THREE.Object3D();
   for(let i=0;i<140;i++){
@@ -636,23 +674,33 @@ function ensureScene(){
   }
   scene.add(speckleMesh);
 
+  // ombre de contact factice sous chaque dé (dégradé radial), plus fine que la vraie shadow map et toujours nette
+  const shadowTex = createShadowTexture();
+  const haloTex = createGlowTexture(0xe9c874);
+  const shadowGeo = new THREE.PlaneGeometry(1,1);
+
   // géométrie du dé (coins arrondis) + matériau façon résine
   const dieSize = DIE_HALF*2;
   const dieGeo = createRoundedBoxGeometry(dieSize, dieSize*0.16, 7);
-  const pipRadius = DIE_HALF*0.135;
-  const pipGeo = new THREE.SphereGeometry(pipRadius, 14, 14);
+  const pipRadius = DIE_HALF*0.185;
+  const pipGeo = new THREE.SphereGeometry(pipRadius, 16, 16);
   const pipMat = new THREE.MeshPhysicalMaterial({ color:0x201812, roughness:0.55, clearcoat:0.3, clearcoatRoughness:0.4 });
 
-  const neutralX = [-1.3,-0.65,0,0.65,1.3];
+  const neutralX = [ROLL_CENTER_X-1.15, ROLL_CENTER_X-0.58, ROLL_CENTER_X, ROLL_CENTER_X+0.58, ROLL_CENTER_X+1.15];
   for(let i=0;i<5;i++){
     const dieMat = new THREE.MeshPhysicalMaterial({
       color:0xf7f1e4, roughness:0.28, metalness:0.02,
       clearcoat:0.65, clearcoatRoughness:0.18, reflectivity:0.5, emissive:0x000000
     });
     const box = new THREE.Mesh(dieGeo, dieMat);
-    box.castShadow = true; box.receiveShadow = true;
     const group = new THREE.Group();
     group.add(box);
+
+    const shadowBlob = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial({ map:shadowTex, transparent:true, depthWrite:false, opacity:0.4 }));
+    shadowBlob.rotation.x = -Math.PI/2;
+    shadowBlob.scale.set(DIE_HALF*3.4, DIE_HALF*3.4, 1);
+    shadowBlob.position.set(neutralX[i], 0.003, 0);
+    scene.add(shadowBlob);
 
     FACE_DIRS.forEach(face=>{
       const layout = PIP_LAYOUTS[face.val];
@@ -670,29 +718,40 @@ function ensureScene(){
       });
     });
 
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(DIE_HALF*1.35, DIE_HALF*1.65, 32),
-      new THREE.MeshBasicMaterial({ color:0xe9c874, transparent:true, opacity:0.9, side:THREE.DoubleSide })
-    );
-    ring.rotation.x = -Math.PI/2;
-    ring.position.y = 0.015;
-    ring.visible = false;
-    group.add(ring);
-
     group.userData.dieIndex = i;
     scene.add(group);
 
+    const halo = new THREE.Mesh(
+      shadowGeo,
+      new THREE.MeshBasicMaterial({ map:haloTex, transparent:true, depthWrite:false, opacity:0 })
+    );
+    halo.rotation.x = -Math.PI/2;
+    halo.position.set(neutralX[i], 0.006, 0);
+    halo.visible = false;
+    scene.add(halo);
+
     diceStates.push({
-      mesh: group, material: dieMat, ring,
+      mesh: group, material: dieMat, halo, shadowBlob,
       pos: new THREE.Vector3(neutralX[i], DIE_HALF, 0),
       vel: new THREE.Vector3(0,0,0),
       angVel: new THREE.Vector3(0,0,0),
       quat: new THREE.Quaternion(),
       glideTarget: null,
+      targetScale: 1, curScale: 1,
       held: false, settled: true, restTimer: 0, value: 1, age: 0,
     });
     diceStates[i].mesh.position.copy(diceStates[i].pos);
   }
+
+  // ligne de séparation discrète entre la zone de lancer et la bande des dés gardés
+  const dividerX = (ROLL_MAX_X + HELD_X - HELD_STRIP_W/2) / 2;
+  const divider = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.012, BOUND_Z*2),
+    new THREE.MeshBasicMaterial({ color:0xcda548, transparent:true, opacity:0.28 })
+  );
+  divider.rotation.x = -Math.PI/2;
+  divider.position.set(dividerX, 0.004, 0);
+  scene.add(divider);
 
   renderer.domElement.style.cursor = "grab";
   renderer.domElement.addEventListener("pointerdown", onCanvasPointerDown);
@@ -700,8 +759,23 @@ function ensureScene(){
   const ro = new ResizeObserver(()=>resizeRenderer());
   ro.observe(container);
   resizeRenderer();
+  positionHeldLabel();
 
   requestAnimationFrame(animate);
+}
+
+function positionHeldLabel(){
+  const label = document.getElementById("hudHeld");
+  if(!label || !camera || !renderer) return;
+  const container = document.getElementById("tray3d");
+  const w = container.clientWidth, h = container.clientHeight;
+  if(w<=0||h<=0) return;
+  const worldPos = new THREE.Vector3(HELD_X, DIE_HALF, -BOUND_Z+0.32);
+  const proj = worldPos.clone().project(camera);
+  const x = (proj.x*0.5+0.5)*w;
+  const y = (1-(proj.y*0.5+0.5))*h;
+  label.style.left = x+"px";
+  label.style.top = y+"px";
 }
 
 function fitCamera(){
@@ -727,6 +801,7 @@ function resizeRenderer(){
   renderer.setSize(w, h, false);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
   fitCamera();
+  positionHeldLabel();
 }
 
 function onCanvasPointerDown(e){
@@ -759,19 +834,21 @@ function toggleHold(idx){
 
 function updateHeldVisual(i){
   const d = diceStates[i];
-  d.ring.visible = d.held;
-  d.material.emissive.setHex(d.held ? 0x5a4517 : 0x000000);
-  d.material.emissiveIntensity = d.held ? 0.5 : 0;
+  d.targetScale = d.held ? 1.16 : 1;
+  d.material.emissive.setHex(d.held ? 0x4a3812 : 0x000000);
+  d.material.emissiveIntensity = d.held ? 0.35 : 0;
+  if(d.held){ d.halo.visible = true; }
+  // le halo reste visible pendant la transition de sortie, updateEffects() le masquera une fois l'opacité retombée
 }
 
 function layoutHeldSlots(){
   const heldIdx = [];
   for(let i=0;i<5;i++) if(state.held[i]) heldIdx.push(i);
   const n = heldIdx.length;
-  const spacing = DIE_HALF*2.7;
+  const spacing = DIE_HALF*2.5;
   heldIdx.forEach((idx,slot)=>{
-    const xOff = (slot-(n-1)/2)*spacing;
-    diceStates[idx].glideTarget = new THREE.Vector3(xOff, DIE_HALF, BOUND_Z - DIE_HALF*2.4);
+    const zOff = (slot-(n-1)/2)*spacing;
+    diceStates[idx].glideTarget = new THREE.Vector3(HELD_X, DIE_HALF, zOff);
   });
 }
 
@@ -789,9 +866,9 @@ function launchDie(i){
   const d = diceStates[i];
   d.held = false; d.settled = false; d.restTimer = 0; d.glideTarget = null; d.age = 0;
   updateHeldVisual(i);
-  const cellW = (BOUND_X*1.7)/5;
-  const cx = -BOUND_X*0.85 + cellW*(i+0.5);
-  const x = cx + (Math.random()-0.5)*cellW*0.7;
+  const cellW = (ROLL_RIGHT-ROLL_LEFT)/5;
+  const cx = ROLL_LEFT + cellW*(i+0.5);
+  const x = cx + (Math.random()-0.5)*cellW*0.6;
   const z = (Math.random()-0.5) * BOUND_Z*1.3;
   d.pos.set(x, 2.4 + Math.random()*0.9, z);
   d.vel.set((Math.random()-0.5)*3.2, -1.2-Math.random()*0.6, (Math.random()-0.5)*3.2);
@@ -801,10 +878,10 @@ function launchDie(i){
 
 function resetDiceForNewTurn(){
   if(!sceneReady) return;
-  const neutralX = [-1.3,-0.65,0,0.65,1.3];
+  const neutralX = [ROLL_CENTER_X-1.15, ROLL_CENTER_X-0.58, ROLL_CENTER_X, ROLL_CENTER_X+0.58, ROLL_CENTER_X+1.15];
   diceStates.forEach((d,i)=>{
     d.held=false; d.settled=true; d.restTimer=0; d.value=1; d.glideTarget=null;
-    d.pos.set(neutralX[i], DIE_HALF, 0.55);
+    d.pos.set(neutralX[i], DIE_HALF, 0.4);
     d.vel.set(0,0,0); d.angVel.set(0,0,0);
     d.quat.identity();
     d.mesh.position.copy(d.pos);
@@ -815,18 +892,25 @@ function resetDiceForNewTurn(){
 
 function restoreDiceFromState(){
   if(!sceneReady || !state) return;
-  const neutralX = [-1.3,-0.65,0,0.65,1.3];
+  const neutralX = [ROLL_CENTER_X-1.15, ROLL_CENTER_X-0.58, ROLL_CENTER_X, ROLL_CENTER_X+0.58, ROLL_CENTER_X+1.15];
   diceStates.forEach((d,i)=>{
     d.held = !!state.held[i];
     d.settled = true; d.restTimer = 0; d.glideTarget = null;
     d.value = state.dice[i];
     const face = FACE_DIRS.find(f=>f.val===d.value);
     d.quat.setFromUnitVectors(face.n.clone(), UP);
-    d.pos.set(neutralX[i], DIE_HALF, 0.55);
+    d.pos.set(neutralX[i], DIE_HALF, 0.4);
     d.vel.set(0,0,0); d.angVel.set(0,0,0);
     d.mesh.position.copy(d.pos);
     d.mesh.quaternion.copy(d.quat);
     updateHeldVisual(i);
+    d.curScale = d.targetScale;
+    d.mesh.scale.setScalar(d.curScale);
+    if(d.halo){
+      d.halo.position.set(d.pos.x, 0.006, d.pos.z);
+      d.halo.material.opacity = d.held ? 0.65 : 0;
+      d.halo.visible = d.held;
+    }
   });
   layoutHeldSlots();
   diceStates.forEach(d=>{ if(d.glideTarget){ d.pos.copy(d.glideTarget); d.mesh.position.copy(d.pos); d.glideTarget=null; } });
@@ -878,7 +962,7 @@ function forceSettle(d){
   const align = new THREE.Quaternion().setFromUnitVectors(top.normal.clone().normalize(), UP);
   d.quat.premultiply(align);
   d.pos.y = FLOOR_Y+DIE_HALF;
-  d.pos.x = THREE.MathUtils.clamp(d.pos.x, -BOUND_X+DIE_HALF, BOUND_X-DIE_HALF);
+  d.pos.x = THREE.MathUtils.clamp(d.pos.x, -BOUND_X+DIE_HALF, ROLL_MAX_X-DIE_HALF);
   d.pos.z = THREE.MathUtils.clamp(d.pos.z, -BOUND_Z+DIE_HALF, BOUND_Z-DIE_HALF);
   d.vel.set(0,0,0); d.angVel.set(0,0,0);
   d.mesh.position.copy(d.pos);
@@ -923,7 +1007,7 @@ function stepPhysics(dt){
       }
     }
     if(d.pos.x - DIE_HALF < -BOUND_X){ d.pos.x=-BOUND_X+DIE_HALF; d.vel.x=Math.abs(d.vel.x)*0.5; }
-    if(d.pos.x + DIE_HALF >  BOUND_X){ d.pos.x= BOUND_X-DIE_HALF; d.vel.x=-Math.abs(d.vel.x)*0.5; }
+    if(d.pos.x + DIE_HALF >  ROLL_MAX_X){ d.pos.x= ROLL_MAX_X-DIE_HALF; d.vel.x=-Math.abs(d.vel.x)*0.5; }
     if(d.pos.z - DIE_HALF < -BOUND_Z){ d.pos.z=-BOUND_Z+DIE_HALF; d.vel.z=Math.abs(d.vel.z)*0.5; }
     if(d.pos.z + DIE_HALF >  BOUND_Z){ d.pos.z= BOUND_Z-DIE_HALF; d.vel.z=-Math.abs(d.vel.z)*0.5; }
     if(bounced && Math.random()<0.55) bounceTick(Math.min(1,impact/6));
@@ -965,6 +1049,35 @@ function checkRollComplete(){
   renderGameHeader();
 }
 
+function updateShadowBlobs(){
+  diceStates.forEach(d=>{
+    if(!d.shadowBlob) return;
+    const h = Math.max(0, d.pos.y - DIE_HALF);
+    const s = THREE.MathUtils.clamp(1 - h*0.32, 0.4, 1);
+    d.shadowBlob.position.set(d.pos.x, 0.003, d.pos.z);
+    d.shadowBlob.scale.set(DIE_HALF*3.4*s, DIE_HALF*3.4*s, 1);
+    d.shadowBlob.material.opacity = THREE.MathUtils.clamp(0.42 - h*0.1, 0.06, 0.42);
+  });
+}
+
+function updateSelectionEffects(dt, elapsed){
+  diceStates.forEach(d=>{
+    // léger agrandissement du dé lorsqu'il est sélectionné
+    d.curScale = THREE.MathUtils.lerp(d.curScale, d.targetScale, Math.min(1, dt*9));
+    d.mesh.scale.setScalar(d.curScale);
+
+    // halo doré au sol, pulsant doucement, toujours à plat quelle que soit l'orientation du dé
+    if(!d.halo) return;
+    const pulse = 0.5 + 0.5*Math.sin(elapsed*3.1 + d.mesh.id*0.7);
+    const targetOpacity = d.held ? (0.55 + pulse*0.25) : 0;
+    d.halo.material.opacity = THREE.MathUtils.lerp(d.halo.material.opacity, targetOpacity, Math.min(1, dt*8));
+    const targetScaleHalo = DIE_HALF*(4.4 + pulse*0.5);
+    d.halo.scale.set(targetScaleHalo, targetScaleHalo, 1);
+    d.halo.position.set(d.pos.x, 0.006, d.pos.z);
+    if(!d.held && d.halo.material.opacity < 0.01){ d.halo.visible = false; }
+  });
+}
+
 function animate(){
   requestAnimationFrame(animate);
   if(!sceneReady) return;
@@ -972,20 +1085,52 @@ function animate(){
   if(sceneActive){
     stepPhysics(dt);
     checkRollComplete();
+    updateShadowBlobs();
+    updateSelectionEffects(dt, clock.elapsedTime);
     renderer.render(scene, camera);
   }
 }
 
 /* ---------- Plein écran ---------- */
 const fsBtn = document.getElementById("fullscreenBtn");
+function fsIsEnabled(){
+  return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled || document.msFullscreenEnabled);
+}
+function fsElement(){
+  return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+}
+function requestFs(el){
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if(!fn) return Promise.reject(new Error("no fullscreen api"));
+  const res = fn.call(el);
+  return res && res.then ? res : Promise.resolve();
+}
+function exitFs(){
+  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+  if(fn) return fn.call(document);
+  return Promise.resolve();
+}
+function showFsHint(){
+  const hint = document.getElementById("hintTxt");
+  if(!hint) return;
+  hint.innerHTML = "Plein écran indisponible dans cet aperçu — ouvrez le fichier téléchargé directement dans votre navigateur pour l'activer.";
+  setTimeout(()=>{ if(state) updateHint(); }, 4200);
+}
 if(fsBtn){
   fsBtn.onclick = ()=>{
-    if(!document.fullscreenElement){ document.documentElement.requestFullscreen?.().catch(()=>{}); }
-    else { document.exitFullscreen?.(); }
+    if(!fsElement()){
+      if(!fsIsEnabled()){ showFsHint(); return; }
+      requestFs(document.documentElement).catch(showFsHint);
+    } else {
+      exitFs();
+    }
   };
-  document.addEventListener("fullscreenchange", ()=>{
-    fsBtn.textContent = document.fullscreenElement ? "⤢" : "⛶";
-    fsBtn.title = document.fullscreenElement ? "Quitter le plein écran" : "Plein écran";
+  ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(evt=>{
+    document.addEventListener(evt, ()=>{
+      const on = !!fsElement();
+      fsBtn.textContent = on ? "⤢" : "⛶";
+      fsBtn.title = on ? "Quitter le plein écran" : "Plein écran";
+    });
   });
 }
 
