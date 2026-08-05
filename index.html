@@ -305,6 +305,10 @@ function recordProfile(name, finalScore){
   p.games += 1; p.total += finalScore; p.best = Math.max(p.best, finalScore);
   profiles[name] = p; saveProfiles();
 }
+function ensureProfile(name){
+  if(!profiles[name]){ profiles[name] = {games:0, best:0, total:0}; return true; }
+  return false;
+}
 
 let audioCtx;
 function getAudioCtx(){ audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
@@ -451,7 +455,11 @@ function renderSetup(){
       ${knownNames.length ? `
         <div class="recent-title">Joueurs récents</div>
         <div class="known-players">
-          ${knownNames.map(n=>`<button class="chip" style="border:1px solid var(--line);cursor:pointer;" data-quickadd="${escapeHtml(n)}">${escapeHtml(n)} <span class="best">★ ${profiles[n].best}</span></button>`).join("")}
+          ${knownNames.map(n=>{
+            const p = profiles[n];
+            const label = p.games>0 ? `★ ${p.best}` : `nouveau`;
+            return `<button class="chip" style="border:1px solid var(--line);cursor:pointer;" data-quickadd="${escapeHtml(n)}">${escapeHtml(n)} <span class="best">${label}</span></button>`;
+          }).join("")}
         </div>` : ``}
       <div class="player-list" id="playerList"></div>
       <button class="btn gold" id="startBtn" style="width:100%;padding:13px;margin-top:8px;">Commencer la partie →</button>
@@ -494,6 +502,9 @@ function addSetupPlayer(){
 }
 function startGameFromSetup(){
   if(setupNames.length===0){ shake(document.getElementById("composerCard")); return; }
+  let changed = false;
+  setupNames.forEach(n=>{ if(ensureProfile(n)) changed = true; });
+  if(changed) saveProfiles();
   state = freshGame(setupNames);
   setupNames = [];
   viewingHome = false;
