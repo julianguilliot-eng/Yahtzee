@@ -48,47 +48,43 @@
   }
 
   /* ---------- SIDEBAR : TABLEAU DE SCORES ---------- */
-  .sidebar{ position:sticky; top:0; align-self:start; height:100vh; padding:22px 18px 22px 24px; border-right:1px solid var(--line); background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05)); overflow-y:auto; }
-  .brand{display:flex; align-items:baseline; gap:10px; margin-bottom:4px;}
-  .brand .mark{ font-family:'Fraunces', serif; font-weight:700; font-style:italic; font-size:15px; color:var(--gold-bright); letter-spacing:0.02em; }
-  .brand .sub{ font-family:'Space Mono', monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(246,239,225,0.4); }
-  .score-title{ font-family:'Fraunces', serif; font-weight:600; font-size:22px; margin:10px 0 16px; color:var(--ivory); border-bottom:1px solid var(--line); padding-bottom:14px; }
-  .score-wrap{ border:1px solid var(--line); border-radius:10px; overflow:auto; background:rgba(0,0,0,0.15); max-width:100%; }
-  table.score-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  .sidebar{ position:sticky; top:0; align-self:start; height:100vh; padding:14px 14px 16px 18px; border-right:1px solid var(--line); background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05)); overflow-y:auto; display:flex; flex-direction:column; }
+  .score-wrap{ border:1px solid var(--line); border-radius:9px; overflow:auto; background:rgba(0,0,0,0.15); max-width:100%; flex:1 1 auto; min-height:0; }
+  table.score-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
   .score-table thead th{ position:sticky; top:0; z-index:2; background:var(--felt-dark); }
-  .score-table th, .score-table td{ padding:7px 6px; text-align:center; border-bottom:1px solid rgba(205,165,72,0.12); }
-  .score-table th.cat-col, .score-table td.cat-col{ text-align:left; font-family:'Inter'; font-weight:500; color:rgba(246,239,225,0.75); font-size:12.5px; white-space:nowrap; padding-left:10px; min-width:118px; }
-  .score-table .player-head{ font-family:'Space Mono', monospace; font-size:11px; letter-spacing:0.03em; color:var(--gold-bright); max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:8px 4px; }
+  .score-table th, .score-table td{ padding:4px 4px; text-align:center; border-bottom:1px solid rgba(205,165,72,0.12); }
+  .score-table th.cat-col, .score-table td.cat-col{ text-align:left; font-family:'Inter'; font-weight:500; color:rgba(246,239,225,0.75); font-size:11px; white-space:nowrap; padding-left:8px; min-width:98px; }
+  .score-table .player-head{ font-family:'Space Mono', monospace; font-size:10px; letter-spacing:0.03em; color:var(--gold-bright); max-width:64px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:6px 3px; }
   .score-table .player-head.active-col{ background:rgba(205,165,72,0.14); box-shadow: inset 0 2px 0 var(--gold), inset 0 -2px 0 var(--gold); }
-  .score-table td.cell{ font-family:'Space Mono', monospace; font-size:13px; color:var(--ivory); min-width:44px; position:relative; }
+  .score-table td.cell{ font-family:'Space Mono', monospace; font-size:11.5px; color:var(--ivory); min-width:38px; position:relative; }
   .score-table td.cell.active-col{ background:rgba(205,165,72,0.08); }
   .score-table td.cell.empty{ color:rgba(246,239,225,0.25); }
-  .score-table td.cell.choosable{ min-width:66px; padding-right:10px; }
+  .score-table td.cell.choosable{ min-width:56px; padding-right:8px; }
   .score-table tr.section-divider td{ border-bottom:1px solid var(--line); padding:0; height:1px; }
   .score-table tr.subtotal td, .score-table tr.total-row td{ background:rgba(0,0,0,0.22); font-weight:700; }
-  .score-table tr.total-row td{ background:rgba(205,165,72,0.16); color:var(--gold-bright); font-size:14px; border-top:1px solid var(--gold); }
-  .cat-hint{ display:block; font-size:9.5px; color:rgba(246,239,225,0.35); font-weight:400; margin-top:1px; }
+  .score-table tr.total-row td{ background:rgba(205,165,72,0.16); color:var(--gold-bright); font-size:12.5px; border-top:1px solid var(--gold); }
+  .cat-hint{ display:block; font-size:8.5px; color:rgba(246,239,225,0.32); font-weight:400; margin-top:0px; }
   .score-pick{
-    font-family:'Space Mono', monospace; font-weight:700; font-size:11px; padding:3px 7px; min-width:24px; border-radius:6px; border:1px solid var(--gold);
-    background:linear-gradient(160deg, var(--gold-bright), var(--gold)); color:var(--ink); cursor:pointer; line-height:1.4;
-    transform: translate(5px,-3px); box-shadow:0 3px 8px rgba(205,165,72,0.45); transition: transform .12s ease, box-shadow .12s ease; position:relative; z-index:3;
+    font-family:'Space Mono', monospace; font-weight:700; font-size:10px; padding:2px 6px; min-width:20px; border-radius:5px; border:1px solid var(--gold);
+    background:linear-gradient(160deg, var(--gold-bright), var(--gold)); color:var(--ink); cursor:pointer; line-height:1.3;
+    transform: translate(4px,-2px); box-shadow:0 3px 7px rgba(205,165,72,0.45); transition: transform .12s ease, box-shadow .12s ease; position:relative; z-index:3;
   }
   .score-pick:hover{ transform:translate(5px,-5px) scale(1.08); box-shadow:0 6px 14px rgba(205,165,72,0.55);}
   .score-pick:active{ transform:translate(5px,-1px) scale(0.97); }
   .score-pick.zero{ background:rgba(0,0,0,0.3); color:rgba(246,239,225,0.55); border-color:var(--line); box-shadow:none;}
   .cell-ghost{ color:rgba(246,239,225,0.18); font-size:12px; }
-  .players-panel{margin-top:22px;}
-  .panel-label{ font-family:'Space Mono', monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:rgba(246,239,225,0.45); margin-bottom:10px; }
-  .known-players{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
-  .chip{ font-family:'Space Mono', monospace; font-size:11px; border:1px solid var(--line); background:rgba(0,0,0,0.2); color:rgba(246,239,225,0.7); padding:5px 10px; border-radius:20px; display:flex; align-items:center; gap:6px; }
+  .players-panel{margin-top:12px; flex-shrink:0;}
+  .panel-label{ font-family:'Space Mono', monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:rgba(246,239,225,0.45); margin-bottom:7px; }
+  .known-players{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+  .chip{ font-family:'Space Mono', monospace; font-size:10px; border:1px solid var(--line); background:rgba(0,0,0,0.2); color:rgba(246,239,225,0.7); padding:4px 9px; border-radius:20px; display:flex; align-items:center; gap:5px; }
   .chip .best{color:var(--gold-bright);}
-  .btn{ border:1px solid var(--line); background:rgba(0,0,0,0.2); color:var(--ivory); padding:8px 12px; border-radius:8px; font-size:12.5px; font-weight:600; transition:all .15s ease; letter-spacing:0.01em; }
+  .btn{ border:1px solid var(--line); background:rgba(0,0,0,0.2); color:var(--ivory); padding:7px 11px; border-radius:8px; font-size:11.5px; font-weight:600; transition:all .15s ease; letter-spacing:0.01em; }
   .btn:hover{border-color:var(--gold); background:rgba(205,165,72,0.1);}
   .btn.gold{ background:var(--gold); color:var(--ink); border-color:var(--gold);}
   .btn.gold:hover{ background:var(--gold-bright);}
   .btn.ghost{background:transparent;}
   .btn:disabled{opacity:.35; cursor:not-allowed;}
-  .new-game-btn{width:100%; margin-top:18px; padding:11px;}
+  .new-game-btn{width:100%; margin-top:10px; padding:9px;}
 
   /* ---------- MAIN : plein écran, sans cadre ---------- */
   .main{ position:relative; height:100vh; overflow:hidden; }
@@ -125,13 +121,16 @@
   .tray-3d canvas{ display:block; width:100%; height:100%; }
   .tray-3d::after{
     content:""; position:absolute; inset:0; pointer-events:none;
-    background: radial-gradient(ellipse at 50% 42%, transparent 42%, rgba(6,20,15,0.55) 100%);
+    background: radial-gradient(ellipse at 50% 42%, transparent 60%, rgba(6,20,15,0.22) 100%);
   }
   .loading3d{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Space Mono', monospace; font-size:11px; color:rgba(246,239,225,0.4); letter-spacing:0.1em; z-index:4; }
 
   .hud-top{ position:absolute; top:22px; left:28px; right:28px; display:flex; justify-content:space-between; align-items:flex-start; z-index:6; pointer-events:none; }
   .hud-title{ font-family:'Fraunces', serif; font-weight:700; font-style:italic; font-size:24px; text-shadow:0 3px 14px rgba(0,0,0,0.55); }
+  .hud-right{ display:flex; align-items:center; gap:10px; pointer-events:auto; }
   .hud-round{ font-family:'Space Mono', monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; background:rgba(6,20,15,0.45); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1px solid var(--line); padding:8px 15px; border-radius:20px; color:var(--gold-bright); white-space:nowrap; }
+  .fs-btn{ background:rgba(6,20,15,0.45); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1px solid var(--line); color:var(--ivory); width:34px; height:34px; border-radius:50%; font-size:15px; display:flex; align-items:center; justify-content:center; transition:all .15s ease; }
+  .fs-btn:hover{ border-color:var(--gold); color:var(--gold-bright); }
 
   .hud-turn{ position:absolute; top:70px; left:50%; transform:translateX(-50%); z-index:6; pointer-events:none;
     background:rgba(6,20,15,0.45); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--gold); border-radius:30px; padding:8px 22px 8px 18px; display:flex; align-items:center; gap:9px; box-shadow:0 6px 18px rgba(0,0,0,0.3); }
@@ -158,8 +157,6 @@
 
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><span class="mark">Table du soir</span><span class="sub">Yahtzee</span></div>
-    <div class="score-title">Feuille de marque</div>
     <div class="score-wrap" id="scoreWrap"></div>
     <div class="players-panel">
       <div class="panel-label">Joueurs connus</div>
@@ -175,7 +172,10 @@
       <div class="tray-3d" id="tray3d"><div class="loading3d" id="loading3d">Installation de la table…</div></div>
       <div class="hud-top">
         <div class="hud-title">Yahtzee</div>
-        <div class="hud-round" id="hudRound">Manche 1 / 13</div>
+        <div class="hud-right">
+          <div class="hud-round" id="hudRound">Manche 1 / 13</div>
+          <button class="fs-btn" id="fullscreenBtn" title="Plein écran">⛶</button>
+        </div>
       </div>
       <div class="hud-turn"><span class="dot"></span><span class="who" id="turnWho"></span><span class="lbl">au tour de jouer</span></div>
       <div class="hud-bottom">
@@ -264,20 +264,35 @@ function recordProfile(name, finalScore){
 }
 
 let audioCtx;
-function tone(freq, dur, gain){
+function getAudioCtx(){ audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function noiseBuffer(ctx, duration){
+  const len = Math.max(1, Math.floor(ctx.sampleRate*duration));
+  const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<len;i++){ data[i] = (Math.random()*2-1) * Math.pow(1-i/len, 1.6); }
+  return buffer;
+}
+/* bruit sourd et feutré (dé en résine posé sur du tissu), pas un bip électronique */
+function thud(strength){
   try{
-    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
-    const t = audioCtx.currentTime;
-    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-    o.type = "square"; o.frequency.value = freq;
-    o.connect(g); g.connect(audioCtx.destination);
-    g.gain.setValueAtTime(gain, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t+dur);
-    o.start(t); o.stop(t+dur+0.02);
+    const ctx = getAudioCtx();
+    const dur = 0.075 + Math.random()*0.035;
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer(ctx, dur);
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 320 + Math.random()*260 + strength*260;
+    filter.Q.value = 0.5;
+    const gain = ctx.createGain();
+    const vol = Math.min(0.3, 0.05 + strength*0.22);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+dur);
+    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    src.start();
   }catch(e){}
 }
-function throwSound(){ for(let i=0;i<3;i++) setTimeout(()=>tone(140+Math.random()*260,0.09,0.06), i*40); }
-function bounceTick(strength){ tone(200+Math.random()*180, 0.05, Math.min(0.08, strength*0.05)); }
+function throwSound(){ for(let i=0;i<3;i++) setTimeout(()=>thud(0.35+Math.random()*0.25), i*35); }
+function bounceTick(strength){ thud(Math.max(0.12, Math.min(1, strength))); }
 
 const scoreWrapEl = document.getElementById("scoreWrap");
 const knownPlayersEl = document.getElementById("knownPlayers");
@@ -524,8 +539,8 @@ let sceneReady = false;
 const GRAVITY = 15;
 const BOUND_X = 4.1, BOUND_Z = 2.35;
 const FLOOR_Y = 0;
-const DIE_HALF = 0.30;
-const MIN_SEP = DIE_HALF*2.55;      // évite tout chevauchement visuel pendant le lancer
+const DIE_HALF = 0.37;
+const MIN_SEP = DIE_HALF*2.5;      // évite tout chevauchement visuel pendant le lancer
 const UP = new THREE.Vector3(0,1,0);
 
 const FACE_DIRS = [
@@ -602,15 +617,15 @@ function ensureScene(){
   rim2.position.set(3.2, 2.2, 2.8);
   scene.add(rim2);
 
-  // feutre — surface infinie, sans bordure visible
-  const feltMat = new THREE.MeshStandardMaterial({ color:0x154a37, roughness:0.92, metalness:0.03 });
+  // feutre — même vert que le fond de la page, surface infinie, sans bordure visible
+  const feltMat = new THREE.MeshStandardMaterial({ color:0x0f3d2e, roughness:0.92, metalness:0.03 });
   const felt = new THREE.Mesh(new THREE.PlaneGeometry(BOUND_X*6, BOUND_Z*6), feltMat);
   felt.rotation.x = -Math.PI/2;
   felt.receiveShadow = true;
   scene.add(felt);
   // texture de feutre subtile via variations de teinte (grille de petits cercles très légers)
   const speckleGeo = new THREE.CircleGeometry(0.02, 6);
-  const speckleMat = new THREE.MeshStandardMaterial({ color:0x1c5a43, roughness:1, transparent:true, opacity:0.35 });
+  const speckleMat = new THREE.MeshStandardMaterial({ color:0x144534, roughness:1, transparent:true, opacity:0.3 });
   const speckleMesh = new THREE.InstancedMesh(speckleGeo, speckleMat, 140);
   const dummy = new THREE.Object3D();
   for(let i=0;i<140;i++){
@@ -674,7 +689,7 @@ function ensureScene(){
       angVel: new THREE.Vector3(0,0,0),
       quat: new THREE.Quaternion(),
       glideTarget: null,
-      held: false, settled: true, restTimer: 0, value: 1,
+      held: false, settled: true, restTimer: 0, value: 1, age: 0,
     });
     diceStates[i].mesh.position.copy(diceStates[i].pos);
   }
@@ -772,7 +787,7 @@ function getTopValue(quat){
 
 function launchDie(i){
   const d = diceStates[i];
-  d.held = false; d.settled = false; d.restTimer = 0; d.glideTarget = null;
+  d.held = false; d.settled = false; d.restTimer = 0; d.glideTarget = null; d.age = 0;
   updateHeldVisual(i);
   const cellW = (BOUND_X*1.7)/5;
   const cx = -BOUND_X*0.85 + cellW*(i+0.5);
@@ -858,10 +873,26 @@ function updateGlides(dt){
   });
 }
 
+function forceSettle(d){
+  const top = getTopValue(d.quat);
+  const align = new THREE.Quaternion().setFromUnitVectors(top.normal.clone().normalize(), UP);
+  d.quat.premultiply(align);
+  d.pos.y = FLOOR_Y+DIE_HALF;
+  d.pos.x = THREE.MathUtils.clamp(d.pos.x, -BOUND_X+DIE_HALF, BOUND_X-DIE_HALF);
+  d.pos.z = THREE.MathUtils.clamp(d.pos.z, -BOUND_Z+DIE_HALF, BOUND_Z-DIE_HALF);
+  d.vel.set(0,0,0); d.angVel.set(0,0,0);
+  d.mesh.position.copy(d.pos);
+  d.mesh.quaternion.copy(d.quat);
+  d.value = top.value;
+  d.settled = true;
+  d.restTimer = 0;
+}
+
 function stepPhysics(dt){
   dt = Math.min(dt, 1/30);
   diceStates.forEach((d)=>{
     if(d.held || d.settled) return;
+    d.age += dt;
     d.vel.y -= GRAVITY*dt;
     d.pos.addScaledVector(d.vel, dt);
     const angle = d.angVel.length()*dt;
@@ -871,11 +902,25 @@ function stepPhysics(dt){
       d.quat.premultiply(dq);
     }
     let bounced=false, impact=0;
-    if(d.pos.y - DIE_HALF < FLOOR_Y){
-      d.pos.y = FLOOR_Y + DIE_HALF;
-      if(d.vel.y < 0){ impact=-d.vel.y; d.vel.y=-d.vel.y*0.4; bounced=impact>0.3; }
-      d.vel.x*=0.7; d.vel.z*=0.7;
-      d.angVel.multiplyScalar(0.5);
+    // zone de contact avec le sol (un peu de marge pour capter le repos, pas seulement l'impact)
+    if(d.pos.y - DIE_HALF < FLOOR_Y + 0.004){
+      if(d.vel.y < -0.55){
+        // vrai rebond
+        impact = -d.vel.y;
+        d.pos.y = FLOOR_Y + DIE_HALF;
+        d.vel.y = -d.vel.y*0.38;
+        d.vel.x *= 0.72; d.vel.z *= 0.72;
+        d.angVel.multiplyScalar(0.55);
+        bounced = impact>0.3;
+      } else {
+        // contact / roulement au sol : on colle au plateau et on freine fort en continu
+        d.pos.y = FLOOR_Y + DIE_HALF;
+        d.vel.y = Math.max(d.vel.y, 0) * 0.2;
+        const groundFriction = Math.pow(0.015, dt);   // décroissance forte par seconde
+        const spinFriction   = Math.pow(0.01, dt);
+        d.vel.x *= groundFriction; d.vel.z *= groundFriction;
+        d.angVel.multiplyScalar(spinFriction);
+      }
     }
     if(d.pos.x - DIE_HALF < -BOUND_X){ d.pos.x=-BOUND_X+DIE_HALF; d.vel.x=Math.abs(d.vel.x)*0.5; }
     if(d.pos.x + DIE_HALF >  BOUND_X){ d.pos.x= BOUND_X-DIE_HALF; d.vel.x=-Math.abs(d.vel.x)*0.5; }
@@ -892,22 +937,16 @@ function stepPhysics(dt){
     if(d.held || d.settled) return;
     d.mesh.position.copy(d.pos);
     d.mesh.quaternion.copy(d.quat);
-    const onFloor = Math.abs(d.pos.y-(FLOOR_Y+DIE_HALF)) < 0.01;
-    const slow = d.vel.length()<0.12 && d.angVel.length()<0.15;
+    const onFloor = Math.abs(d.pos.y-(FLOOR_Y+DIE_HALF)) < 0.012;
+    const slow = d.vel.length()<0.16 && d.angVel.length()<0.22;
     if(onFloor && slow){
       d.restTimer += dt;
-      if(d.restTimer>0.2){
-        const top = getTopValue(d.quat);
-        const align = new THREE.Quaternion().setFromUnitVectors(top.normal.clone().normalize(), UP);
-        d.quat.premultiply(align);
-        d.pos.y = FLOOR_Y+DIE_HALF;
-        d.vel.set(0,0,0); d.angVel.set(0,0,0);
-        d.mesh.position.copy(d.pos);
-        d.mesh.quaternion.copy(d.quat);
-        d.value = top.value;
-        d.settled = true;
-      }
-    } else { d.restTimer = 0; }
+      if(d.restTimer>0.16){ forceSettle(d); }
+    } else {
+      d.restTimer = 0;
+    }
+    // garde-fou : quoi qu'il arrive, un dé ne roule jamais plus de 3 secondes
+    if(!d.settled && d.age > 3.0){ forceSettle(d); }
   });
 
   updateGlides(dt);
@@ -936,6 +975,31 @@ function animate(){
     renderer.render(scene, camera);
   }
 }
+
+/* ---------- Plein écran ---------- */
+const fsBtn = document.getElementById("fullscreenBtn");
+if(fsBtn){
+  fsBtn.onclick = ()=>{
+    if(!document.fullscreenElement){ document.documentElement.requestFullscreen?.().catch(()=>{}); }
+    else { document.exitFullscreen?.(); }
+  };
+  document.addEventListener("fullscreenchange", ()=>{
+    fsBtn.textContent = document.fullscreenElement ? "⤢" : "⛶";
+    fsBtn.title = document.fullscreenElement ? "Quitter le plein écran" : "Plein écran";
+  });
+}
+
+/* ---------- Protection contre la perte de partie (rafraîchissement / fermeture) ---------- */
+window.addEventListener("beforeunload", (e)=>{
+  if(state && !state.gameOver){
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+window.addEventListener("keydown", (e)=>{
+  const isRefresh = e.key==="F5" || ((e.ctrlKey||e.metaKey) && (e.key==="r"||e.key==="R"));
+  if(isRefresh && state && !state.gameOver){ e.preventDefault(); }
+});
 
 /* ---------- Init ---------- */
 (async function init(){
