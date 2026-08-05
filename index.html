@@ -255,28 +255,64 @@ function freshGame(names){
   };
 }
 
-let storageWorks = null; // null=pas encore testé, true/false=résultat constaté
-function markStorageStatus(ok){
+let storageWorks = null;   // null=pas encore testé, true/false=résultat constaté
+let storageVia = null;     // 'cloud' (compte Claude) ou 'local' (navigateur) ou null
+function markStorageStatus(ok, via){
   storageWorks = ok;
+  storageVia = ok ? via : null;
   updateStorageBadge();
 }
-async function saveGame(){
-  try{ const r = await window.storage.set(STORAGE_GAME_KEY, JSON.stringify(state), false); markStorageStatus(!!r); }
-  catch(e){ console.error("Échec de sauvegarde de la partie :", e); markStorageStatus(false); }
+
+/* Stockage à deux niveaux :
+   1) window.storage — sauvegarde liée au compte Claude, fonctionne dans l'aperçu Claude.ai.
+   2) localStorage — repli automatique pour quand le fichier est ouvert seul dans un navigateur
+      (là où window.storage n'existe pas mais où localStorage fonctionne normalement). */
+async function storagePut(key, value){
+  try{
+    if(window.storage){
+      const r = await window.storage.set(key, value, false);
+      if(r){ markStorageStatus(true, "cloud"); return; }
+    }
+  }catch(e){ console.warn("window.storage indisponible, repli sur le stockage local :", e); }
+  try{
+    localStorage.setItem(key, value);
+    markStorageStatus(true, "local");
+  }catch(e){
+    console.error("Aucun stockage disponible (ni compte, ni navigateur) :", e);
+    markStorageStatus(false, null);
+  }
 }
-async function loadGame(){
-  try{ const r = await window.storage.get(STORAGE_GAME_KEY, false); markStorageStatus(true); if(r && r.value) return JSON.parse(r.value); }
-  catch(e){ console.error("Échec de lecture de la partie sauvegardée :", e); markStorageStatus(false); }
+async function storageTake(key){
+  try{
+    if(window.storage){
+      const r = await window.storage.get(key, false);
+      if(r && r.value){ markStorageStatus(true, "cloud"); return r.value; }
+    }
+  }catch(e){ /* on tente le repli local */ }
+  try{
+    const v = localStorage.getItem(key);
+    if(v !== null){ markStorageStatus(true, "local"); return v; }
+    markStorageStatus(true, storageVia || "cloud");
+  }catch(e){
+    console.error("Aucun stockage disponible pour la lecture :", e);
+    markStorageStatus(false, null);
+  }
   return null;
 }
-async function saveProfiles(){
-  try{ const r = await window.storage.set(STORAGE_PROFILES_KEY, JSON.stringify(profiles), false); markStorageStatus(!!r); }
-  catch(e){ console.error("Échec de sauvegarde des profils :", e); markStorageStatus(false); }
+async function storageWipe(key){
+  try{ if(window.storage) await window.storage.delete(key, false); }catch(e){}
+  try{ localStorage.removeItem(key); }catch(e){}
 }
+
+async function saveGame(){ await storagePut(STORAGE_GAME_KEY, JSON.stringify(state)); }
+async function loadGame(){
+  const v = await storageTake(STORAGE_GAME_KEY);
+  return v ? JSON.parse(v) : null;
+}
+async function saveProfiles(){ await storagePut(STORAGE_PROFILES_KEY, JSON.stringify(profiles)); }
 async function loadProfiles(){
-  try{ const r = await window.storage.get(STORAGE_PROFILES_KEY, false); markStorageStatus(true); if(r && r.value) return JSON.parse(r.value); }
-  catch(e){ console.error("Échec de lecture des profils :", e); markStorageStatus(false); }
-  return {};
+  const v = await storageTake(STORAGE_PROFILES_KEY);
+  return v ? JSON.parse(v) : {};
 }
 function isTouchTablet(){
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -292,7 +328,11 @@ function updateStorageBadge(){
   } else if(storageWorks === true){
     if(badge) badge.style.display = "none";
     if(statusText){
-      statusText.textContent = "Sauvegarde automatique : active." + (onIpad ? " Sur iPad, jouez depuis Claude (Safari ou l'app) pour qu'elle continue de fonctionner — un fichier ouvert seul depuis Fichiers ne peut pas s'en servir, pensez alors à l'export." : "");
+      if(storageVia === "local"){
+        statusText.textContent = "Sauvegarde automatique : active, dans ce navigateur (cet appareil uniquement). Rejouer depuis un autre appareil ou navigateur ne la retrouvera pas — pensez à exporter un fichier pour la transporter.";
+      } else {
+        statusText.textContent = "Sauvegarde automatique : active." + (onIpad ? " Sur iPad, jouez depuis Claude (Safari ou l'app) pour qu'elle continue de fonctionner." : "");
+      }
       statusText.style.color = "";
     }
   } else {
@@ -643,7 +683,7 @@ async function importBackup(e){
 
 async function startNewGameFlow(){
   state = null; setupNames = []; viewingHome = false;
-  try{ await window.storage.delete(STORAGE_GAME_KEY, false); }catch(e){}
+  await storageWipe(STORAGE_GAME_KEY);
   renderAll();
 }
 document.getElementById("newGameBtn").onclick = startNewGameFlow;
