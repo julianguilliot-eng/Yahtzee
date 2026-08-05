@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Yahtzee — Table du soir</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -37,7 +37,8 @@
   ::-webkit-scrollbar{width:10px; height:10px;}
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:var(--wood-light); border-radius:10px;}
-  button{font-family:inherit; cursor:pointer;}
+  button{font-family:inherit; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;}
+  .tray-3d canvas{ touch-action:none; } /* les gestes sur les dés ne doivent jamais déclencher de scroll/zoom iPad */
   button:focus-visible, input:focus-visible, [tabindex]:focus-visible{ outline:2px solid var(--gold-bright); outline-offset:2px; }
 
   .app{ display:grid; grid-template-columns: 380px 1fr; height:100vh; max-width:1600px; margin:0 auto; }
@@ -48,25 +49,25 @@
   }
 
   /* ---------- SIDEBAR : TABLEAU DE SCORES ---------- */
-  .sidebar{ position:sticky; top:0; align-self:start; height:100vh; padding:16px 14px 16px 18px; border-right:1px solid var(--line); background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05)); overflow-y:auto; display:flex; flex-direction:column; }
-  .score-title{ font-family:'Fraunces', serif; font-weight:600; font-style:italic; font-size:15px; letter-spacing:0.02em; color:var(--gold-bright); margin:0 0 10px 2px; flex-shrink:0; }
-  .score-wrap{ border:1px solid var(--line); border-radius:9px; overflow:auto; background:rgba(0,0,0,0.15); max-width:100%; flex:1 1 auto; min-height:0; }
-  table.score-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
+  .sidebar{ position:sticky; top:0; align-self:start; height:100vh; padding:16px 14px 16px 18px; border-right:1px solid var(--line); background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05)); overflow-y:auto; display:flex; flex-direction:column; justify-content:flex-end; }
+  .score-title{ font-family:'Fraunces', serif; font-weight:600; font-style:italic; font-size:15px; letter-spacing:0.02em; color:var(--gold-bright); margin:0 0 8px 2px; flex-shrink:0; }
+  .score-wrap{ border:1px solid var(--line); border-radius:9px; overflow:auto; background:rgba(0,0,0,0.15); max-width:100%; flex:0 1 auto; max-height:calc(100vh - 40px); }
+  table.score-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
   .score-table thead th{ position:sticky; top:0; z-index:2; background:var(--felt-dark); }
-  .score-table th, .score-table td{ padding:4px 4px; text-align:center; border-bottom:1px solid rgba(205,165,72,0.12); }
-  .score-table th.cat-col, .score-table td.cat-col{ text-align:left; font-family:'Inter'; font-weight:500; color:rgba(246,239,225,0.75); font-size:11px; white-space:nowrap; padding-left:8px; min-width:98px; }
-  .score-table .player-head{ font-family:'Space Mono', monospace; font-size:10px; letter-spacing:0.03em; color:var(--gold-bright); max-width:64px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:6px 3px; }
+  .score-table th, .score-table td{ padding:5px 5px; text-align:center; border-bottom:1px solid rgba(205,165,72,0.12); }
+  .score-table th.cat-col, .score-table td.cat-col{ text-align:left; font-family:'Inter'; font-weight:500; color:rgba(246,239,225,0.75); font-size:12px; white-space:nowrap; padding-left:9px; min-width:106px; }
+  .score-table .player-head{ font-family:'Space Mono', monospace; font-size:10.5px; letter-spacing:0.03em; color:var(--gold-bright); max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:7px 4px; }
   .score-table .player-head.active-col{ background:rgba(205,165,72,0.14); box-shadow: inset 0 2px 0 var(--gold), inset 0 -2px 0 var(--gold); }
-  .score-table td.cell{ font-family:'Space Mono', monospace; font-size:11.5px; color:var(--ivory); min-width:38px; position:relative; }
+  .score-table td.cell{ font-family:'Space Mono', monospace; font-size:12.5px; color:var(--ivory); min-width:40px; position:relative; }
   .score-table td.cell.active-col{ background:rgba(205,165,72,0.08); }
   .score-table td.cell.empty{ color:rgba(246,239,225,0.25); }
-  .score-table td.cell.choosable{ min-width:56px; padding-right:8px; }
+  .score-table td.cell.choosable{ min-width:60px; padding-right:9px; }
   .score-table tr.section-divider td{ border-bottom:1px solid var(--line); padding:0; height:1px; }
   .score-table tr.subtotal td, .score-table tr.total-row td{ background:#0d251c; font-weight:700; }
-  .score-table tr.total-row td{ position:sticky; bottom:0; z-index:2; background:#1c1305; color:var(--gold-bright); font-size:12.5px; border-top:1px solid var(--gold); box-shadow:0 -6px 10px -6px rgba(0,0,0,0.5); }
-  .cat-hint{ display:block; font-size:8.5px; color:rgba(246,239,225,0.32); font-weight:400; margin-top:0px; }
+  .score-table tr.total-row td{ position:sticky; bottom:0; z-index:2; background:#1c1305; color:var(--gold-bright); font-size:13.5px; border-top:1px solid var(--gold); box-shadow:0 -6px 10px -6px rgba(0,0,0,0.5); }
+  .cat-hint{ display:block; font-size:9px; color:rgba(246,239,225,0.32); font-weight:400; margin-top:0px; }
   .score-pick{
-    font-family:'Space Mono', monospace; font-weight:700; font-size:10px; padding:2px 6px; min-width:20px; border-radius:5px; border:1px solid var(--gold);
+    font-family:'Space Mono', monospace; font-weight:700; font-size:10.5px; padding:2px 7px; min-width:22px; border-radius:5px; border:1px solid var(--gold);
     background:linear-gradient(160deg, var(--gold-bright), var(--gold)); color:var(--ink); cursor:pointer; line-height:1.3;
     transform: translate(4px,-2px); box-shadow:0 3px 7px rgba(205,165,72,0.45); transition: transform .12s ease, box-shadow .12s ease; position:relative; z-index:3;
   }
@@ -179,6 +180,7 @@
         <div class="hud-right">
           <div class="hud-round" id="hudRound">Manche 1 / 13</div>
           <button class="fs-btn" id="fullscreenBtn" title="Plein écran">⛶</button>
+          <button class="btn ghost new-game-btn-top" id="homeBtn">⌂ Accueil</button>
           <button class="btn ghost new-game-btn-top" id="newGameBtn">↺ Nouvelle partie</button>
         </div>
       </div>
@@ -240,6 +242,7 @@ function hasStraight(dice, len){
 let state = null;
 let profiles = {};
 let setupNames = [];
+let viewingHome = false; // affiche l'accueil sans effacer une partie en cours
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
 function newDice(){ return [1,1,1,1,1]; }
@@ -252,15 +255,50 @@ function freshGame(names){
   };
 }
 
-async function saveGame(){ try{ await window.storage.set(STORAGE_GAME_KEY, JSON.stringify(state), false); }catch(e){} }
+let storageWorks = null; // null=pas encore testé, true/false=résultat constaté
+function markStorageStatus(ok){
+  storageWorks = ok;
+  updateStorageBadge();
+}
+async function saveGame(){
+  try{ const r = await window.storage.set(STORAGE_GAME_KEY, JSON.stringify(state), false); markStorageStatus(!!r); }
+  catch(e){ console.error("Échec de sauvegarde de la partie :", e); markStorageStatus(false); }
+}
 async function loadGame(){
-  try{ const r = await window.storage.get(STORAGE_GAME_KEY, false); if(r && r.value) return JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get(STORAGE_GAME_KEY, false); markStorageStatus(true); if(r && r.value) return JSON.parse(r.value); }
+  catch(e){ console.error("Échec de lecture de la partie sauvegardée :", e); markStorageStatus(false); }
   return null;
 }
-async function saveProfiles(){ try{ await window.storage.set(STORAGE_PROFILES_KEY, JSON.stringify(profiles), false); }catch(e){} }
+async function saveProfiles(){
+  try{ const r = await window.storage.set(STORAGE_PROFILES_KEY, JSON.stringify(profiles), false); markStorageStatus(!!r); }
+  catch(e){ console.error("Échec de sauvegarde des profils :", e); markStorageStatus(false); }
+}
 async function loadProfiles(){
-  try{ const r = await window.storage.get(STORAGE_PROFILES_KEY, false); if(r && r.value) return JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get(STORAGE_PROFILES_KEY, false); markStorageStatus(true); if(r && r.value) return JSON.parse(r.value); }
+  catch(e){ console.error("Échec de lecture des profils :", e); markStorageStatus(false); }
   return {};
+}
+function isTouchTablet(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+function updateStorageBadge(){
+  const badge = document.getElementById("storageBadge");
+  const statusText = document.getElementById("storageStatusText");
+  const onIpad = isTouchTablet();
+  if(storageWorks === false){
+    const warn = "⚠ La sauvegarde automatique ne fonctionne pas dans ce contexte. Utilisez l'export / import ci-dessous pour ne rien perdre.";
+    if(badge){ badge.style.display = "block"; badge.textContent = warn; }
+    if(statusText){ statusText.textContent = "Sauvegarde automatique : indisponible ici. Exportez régulièrement votre sauvegarde ci-dessous."; statusText.style.color = "#f0c98a"; }
+  } else if(storageWorks === true){
+    if(badge) badge.style.display = "none";
+    if(statusText){
+      statusText.textContent = "Sauvegarde automatique : active." + (onIpad ? " Sur iPad, jouez depuis Claude (Safari ou l'app) pour qu'elle continue de fonctionner — un fichier ouvert seul depuis Fichiers ne peut pas s'en servir, pensez alors à l'export." : "");
+      statusText.style.color = "";
+    }
+  } else {
+    if(badge) badge.style.display = "none";
+    if(statusText) statusText.textContent = "Vérification de la sauvegarde automatique…";
+  }
 }
 function recordProfile(name, finalScore){
   const p = profiles[name] || {games:0, best:0, total:0};
@@ -376,7 +414,7 @@ function showScreen(name){
   else { sceneActive = false; }
 }
 function renderMain(){
-  if(!state){ renderSetup(); showScreen("setup"); return; }
+  if(viewingHome || !state){ renderSetup(); showScreen("setup"); return; }
   if(state.gameOver){ renderEndScreen(); showScreen("end"); return; }
   renderGameHeader();
   showScreen("game");
@@ -384,9 +422,26 @@ function renderMain(){
 
 function renderSetup(){
   const knownNames = Object.keys(profiles).sort((a,b)=> (profiles[b].best-profiles[a].best));
+  const canResume = !!(state && !state.gameOver);
   setupScreenEl.innerHTML = `
     <div class="table-header"><div><h1>Yahtzee</h1><div class="tagline">Cinq dés · trois lancers · treize catégories</div></div></div>
-    <div class="setup-card">
+    <div id="storageBadge" style="display:none; max-width:560px; margin:0 auto 16px; padding:11px 18px; border:1px solid #b5762f; background:rgba(181,118,47,0.15); border-radius:10px; font-size:12.5px; color:#f0c98a; text-align:center;"></div>
+    <div class="setup-card" style="margin-bottom:18px;padding:22px 36px;">
+      <div class="recent-title" style="margin:0 0 10px;">Sauvegarde</div>
+      <p class="desc" id="storageStatusText" style="margin:0 0 14px;">Vérification de la sauvegarde automatique…</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn gold" id="exportBtn" style="padding:11px 20px;">💾 Enregistrer</button>
+        <button class="btn" id="importBtn" style="padding:11px 20px;">📂 Charger</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+      </div>
+      <p class="desc" style="margin:12px 0 0; font-size:11.5px; opacity:0.75;">Le fichier garde toujours le même nom (<code>yahtzee-sauvegarde.json</code>) : "Enregistrer" l'écrase à chaque fois au même endroit, donc "Charger" le retrouve facilement — la plupart des sélecteurs de fichiers (dont celui d'iPad) proposent vos fichiers récents en premier.</p>
+    </div>
+    ${canResume ? `
+    <div class="setup-card" style="margin-bottom:18px;padding:22px 36px;">
+      <p class="desc" style="margin:0 0 12px;">Une partie est toujours en cours (${state.players.map(p=>escapeHtml(p.name)).join(", ")}).</p>
+      <button class="btn gold" id="resumeBtn" style="width:100%;padding:12px;">▶ Reprendre la partie en cours</button>
+    </div>` : ``}
+    <div class="setup-card" id="composerCard">
       <h2>Composer la table</h2>
       <p class="desc">Ajoutez les joueurs de cette partie. Leur historique et meilleur score sont conservés d'une session à l'autre.</p>
       <div class="add-row">
@@ -406,9 +461,18 @@ function renderSetup(){
   document.getElementById("addPlayerBtn").onclick = addSetupPlayer;
   document.getElementById("nameInput").addEventListener("keydown", e=>{ if(e.key==="Enter") addSetupPlayer(); });
   document.getElementById("startBtn").onclick = startGameFromSetup;
+  if(canResume){ document.getElementById("resumeBtn").onclick = ()=>{
+    viewingHome=false;
+    renderAll();
+    requestAnimationFrame(ensureSceneAndSync);
+  }; }
+  document.getElementById("exportBtn").onclick = exportBackup;
+  document.getElementById("importBtn").onclick = ()=> document.getElementById("importFile").click();
+  document.getElementById("importFile").addEventListener("change", importBackup);
   setupScreenEl.querySelectorAll("[data-quickadd]").forEach(btn=>{
     btn.onclick = ()=>{ const n = btn.getAttribute("data-quickadd"); if(!setupNames.includes(n)){ setupNames.push(n); renderSetupList(); } };
   });
+  updateStorageBadge();
 }
 function renderSetupList(){
   const listEl = document.getElementById("playerList");
@@ -429,9 +493,10 @@ function addSetupPlayer(){
   setupNames.push(name); input.value = ""; renderSetupList(); input.focus();
 }
 function startGameFromSetup(){
-  if(setupNames.length===0){ shake(document.querySelector(".setup-card")); return; }
+  if(setupNames.length===0){ shake(document.getElementById("composerCard")); return; }
   state = freshGame(setupNames);
   setupNames = [];
+  viewingHome = false;
   saveGame();
   resetDiceForNewTurn();
   renderAll();
@@ -520,12 +585,58 @@ function renderEndScreen(){
   };
   document.getElementById("newGameEndBtn").onclick = startNewGameFlow;
 }
+function exportBackup(){
+  const payload = {
+    kind: "yahtzee-table-du-soir-backup",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    profiles,
+    game: state,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "yahtzee-sauvegarde.json"; // nom fixe : toujours le même fichier à retrouver/écraser
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+async function importBackup(e){
+  const file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(data.profiles && typeof data.profiles === "object"){
+      profiles = data.profiles;
+      await saveProfiles();
+    }
+    if(data.game && typeof data.game === "object" && !data.game.gameOver){
+      state = data.game;
+      viewingHome = false;
+      await saveGame();
+    }
+    renderAll();
+    requestAnimationFrame(()=>{
+      ensureSceneAndSync();
+    });
+  }catch(err){
+    console.error("Import de sauvegarde impossible :", err);
+    alert("Ce fichier ne semble pas être une sauvegarde Yahtzee valide.");
+  }
+}
+
 async function startNewGameFlow(){
-  state = null; setupNames = [];
+  state = null; setupNames = []; viewingHome = false;
   try{ await window.storage.delete(STORAGE_GAME_KEY, false); }catch(e){}
   renderAll();
 }
 document.getElementById("newGameBtn").onclick = startNewGameFlow;
+document.getElementById("homeBtn").onclick = ()=>{ viewingHome = true; renderAll(); };
 function renderAll(){ renderScoreTable(); renderMain(); }
 
 /* ============================================================
@@ -536,6 +647,13 @@ let diceStates = [];
 let rollInProgress = false;
 let sceneActive = false;
 let sceneReady = false;
+
+function ensureSceneAndSync(){
+  if(!state || state.gameOver) return;
+  const wasReady = sceneReady;
+  ensureScene();
+  if(!wasReady){ restoreDiceFromState(); } // ne resynchronise que si la scène vient d'être créée
+}
 
 const GRAVITY = 15;
 const BOUND_X = 5.0, BOUND_Z = 2.5;
@@ -575,7 +693,6 @@ function createShadowTexture(){
   ctx.fillStyle = grad;
   ctx.fillRect(0,0,size,size);
   const tex = new THREE.CanvasTexture(canvas);
-  tex.encoding = THREE.sRGBEncoding;
   return tex;
 }
 
@@ -593,7 +710,6 @@ function createGlowTexture(hex){
   ctx.fillStyle = grad;
   ctx.fillRect(0,0,size,size);
   const tex = new THREE.CanvasTexture(canvas);
-  tex.encoding = THREE.sRGBEncoding;
   return tex;
 }
 
@@ -631,7 +747,6 @@ function ensureScene(){
   clock = new THREE.Clock();
 
   renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-  renderer.outputEncoding = THREE.sRGBEncoding;
   container.insertBefore(renderer.domElement, loading);
   if(loading) loading.remove();
 
@@ -871,11 +986,11 @@ function canonicalQuatForValue(value){
 }
 
 const NEUTRAL_OFFSETS = [
-  {dx:-1.22, dz:0.16, yaw:0.24},
-  {dx:-0.52, dz:-0.14, yaw:-0.32},
-  {dx:0.10, dz:0.20, yaw:0.15},
-  {dx:0.70, dz:-0.18, yaw:-0.20},
-  {dx:1.30, dz:0.10, yaw:0.28},
+  {dx:-2.85, dz:0.24, yaw:0.24},
+  {dx:-1.42, dz:-0.20, yaw:-0.32},
+  {dx:0.05, dz:0.28, yaw:0.15},
+  {dx:1.48, dz:-0.24, yaw:-0.20},
+  {dx:2.90, dz:0.16, yaw:0.28},
 ];
 function staggeredQuatForValue(value, yaw){
   const q = canonicalQuatForValue(value);
@@ -1181,7 +1296,7 @@ window.addEventListener("keydown", (e)=>{
   else if(saved && saved.gameOver){ state = null; }
   renderAll();
   requestAnimationFrame(()=>{
-    if(state && !state.gameOver){ ensureScene(); restoreDiceFromState(); }
+    ensureSceneAndSync();
   });
 })();
 </script>
