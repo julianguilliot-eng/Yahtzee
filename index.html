@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yahtzee — Table du soir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --felt-dark:#0b2f24;
+    --felt:#0f3d2e;
+    --felt-light:#154a37;
+    --wood:#2a1a12;
+    --wood-light:#4a2f1f;
+    --gold:#cda548;
+    --gold-bright:#e9c874;
+    --ivory:#f6efe1;
+    --ink:#0d1f18;
+    --ink-soft:#3a4a42;
+    --ruby:#a13d3d;
+    --line: rgba(205,165,72,0.25);
+    --shadow: 0 10px 30px rgba(0,0,0,0.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(233,200,116,0.06), transparent 45%),
+      radial-gradient(ellipse at 80% 100%, rgba(233,200,116,0.05), transparent 50%),
+      linear-gradient(160deg, var(--felt-dark), var(--felt) 45%, var(--felt-dark));
+    color:var(--ivory);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--gold); color:var(--ink);}
+  ::-webkit-scrollbar{width:10px; height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--wood-light); border-radius:10px;}
+
+  button{font-family:inherit; cursor:pointer;}
+  button:focus-visible, input:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--gold-bright); outline-offset:2px;
+  }
+
+  .app{
+    display:grid;
+    grid-template-columns: 380px 1fr;
+    min-height:100vh;
+    max-width:1500px;
+    margin:0 auto;
+  }
+  @media (max-width: 920px){
+    .app{grid-template-columns: 1fr;}
+    .sidebar{order:2; position:static !important; max-height:none !important;}
+    .main{order:1;}
+  }
+
+  /* ---------- SIDEBAR : TABLEAU DE SCORES ---------- */
+  .sidebar{
+    position:sticky; top:0; align-self:start;
+    height:100vh;
+    padding:22px 18px 22px 24px;
+    border-right:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05));
+    overflow-y:auto;
+  }
+  .brand{
+    display:flex; align-items:baseline; gap:10px; margin-bottom:4px;
+  }
+  .brand .mark{
+    font-family:'Fraunces', serif; font-weight:700; font-style:italic;
+    font-size:15px; color:var(--gold-bright); letter-spacing:0.02em;
+  }
+  .brand .sub{
+    font-family:'Space Mono', monospace; font-size:10px; letter-spacing:0.18em;
+    text-transform:uppercase; color:rgba(246,239,225,0.4);
+  }
+  .score-title{
+    font-family:'Fraunces', serif; font-weight:600; font-size:22px;
+    margin:10px 0 16px; color:var(--ivory);
+    border-bottom:1px solid var(--line); padding-bottom:14px;
+  }
+
+  .score-wrap{
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    background:rgba(0,0,0,0.15);
+  }
+  table.score-table{
+    width:100%; border-collapse:collapse; font-size:13px;
+  }
+  .score-table thead th{
+    position:sticky; top:0; z-index:2;
+    background:var(--felt-dark);
+  }
+  .score-table th, .score-table td{
+    padding:7px 6px; text-align:center; border-bottom:1px solid rgba(205,165,72,0.12);
+  }
+  .score-table th.cat-col, .score-table td.cat-col{
+    text-align:left; font-family:'Inter'; font-weight:500;
+    color:rgba(246,239,225,0.75); font-size:12.5px; white-space:nowrap;
+    padding-left:10px; min-width:118px;
+  }
+  .score-table .player-head{
+    font-family:'Space Mono', monospace; font-size:11px; letter-spacing:0.03em;
+    color:var(--gold-bright); max-width:70px; overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; padding:8px 4px;
+  }
+  .score-table .player-head.active-col{
+    background:rgba(205,165,72,0.14);
+    box-shadow: inset 0 2px 0 var(--gold), inset 0 -2px 0 var(--gold);
+  }
+  .score-table td.cell{
+    font-family:'Space Mono', monospace; font-size:13px; color:var(--ivory);
+    min-width:44px;
+  }
+  .score-table td.cell.active-col{ background:rgba(205,165,72,0.08); }
+  .score-table td.cell.empty{ color:rgba(246,239,225,0.25); }
+  .score-table tr.section-divider td{
+    border-bottom:1px solid var(--line); padding:0; height:1px;
+  }
+  .score-table tr.subtotal td, .score-table tr.total-row td{
+    background:rgba(0,0,0,0.22); font-weight:700;
+  }
+  .score-table tr.total-row td{
+    background:rgba(205,165,72,0.16); color:var(--gold-bright);
+    font-size:14px; border-top:1px solid var(--gold);
+  }
+  .cat-hint{
+    display:block; font-size:9.5px; color:rgba(246,239,225,0.35); font-weight:400;
+    margin-top:1px;
+  }
+
+  .players-panel{margin-top:22px;}
+  .panel-label{
+    font-family:'Space Mono', monospace; font-size:10px; letter-spacing:0.16em;
+    text-transform:uppercase; color:rgba(246,239,225,0.45); margin-bottom:10px;
+  }
+  .known-players{
+    display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;
+  }
+  .chip{
+    font-family:'Space Mono', monospace; font-size:11px;
+    border:1px solid var(--line); background:rgba(0,0,0,0.2);
+    color:rgba(246,239,225,0.7); padding:5px 10px; border-radius:20px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .chip .best{color:var(--gold-bright);}
+  .btn{
+    border:1px solid var(--line); background:rgba(0,0,0,0.2); color:var(--ivory);
+    padding:8px 12px; border-radius:8px; font-size:12.5px; font-weight:600;
+    transition:all .15s ease; letter-spacing:0.01em;
+  }
+  .btn:hover{border-color:var(--gold); background:rgba(205,165,72,0.1);}
+  .btn.gold{ background:var(--gold); color:var(--ink); border-color:var(--gold);}
+  .btn.gold:hover{ background:var(--gold-bright);}
+  .btn.ghost{background:transparent;}
+  .btn.small{padding:5px 9px; font-size:11px;}
+  .btn:disabled{opacity:.35; cursor:not-allowed;}
+
+  .new-game-btn{width:100%; margin-top:18px; padding:11px;}
+
+  /* ---------- MAIN AREA ---------- */
+  .main{ padding:30px 40px 60px; position:relative; }
+  .table-header{
+    display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:26px;
+    flex-wrap:wrap; gap:14px;
+  }
+  .table-header h1{
+    font-family:'Fraunces', serif; font-weight:700; font-size:40px; margin:0;
+    letter-spacing:-0.01em;
+  }
+  .table-header .tagline{
+    font-family:'Space Mono', monospace; font-size:11px; letter-spacing:0.14em;
+    text-transform:uppercase; color:rgba(246,239,225,0.4); margin-top:4px;
+  }
+  .turn-banner{
+    display:flex; align-items:center; gap:12px;
+    border:1px solid var(--gold); border-radius:12px;
+    padding:10px 18px; background:rgba(205,165,72,0.08);
+  }
+  .turn-banner .who{
+    font-family:'Fraunces', serif; font-style:italic; font-weight:600; font-size:19px; color:var(--gold-bright);
+  }
+  .turn-banner .rolls{
+    font-family:'Space Mono', monospace; font-size:11px; color:rgba(246,239,225,0.55);
+  }
+
+  /* SETUP SCREEN */
+  .setup-card{
+    max-width:560px; margin:6vh auto; padding:36px;
+    background:linear-gradient(160deg, rgba(0,0,0,0.25), rgba(0,0,0,0.1));
+    border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);
+  }
+  .setup-card h2{
+    font-family:'Fraunces', serif; font-size:28px; margin:0 0 6px;
+  }
+  .setup-card p.desc{color:rgba(246,239,225,0.55); font-size:13.5px; margin:0 0 24px;}
+  .add-row{display:flex; gap:8px; margin-bottom:14px;}
+  .add-row input{
+    flex:1; padding:11px 14px; border-radius:9px; border:1px solid var(--line);
+    background:rgba(0,0,0,0.25); color:var(--ivory); font-size:14px; font-family:inherit;
+  }
+  .add-row input::placeholder{color:rgba(246,239,225,0.35);}
+  .player-list{display:flex; flex-direction:column; gap:8px; margin:18px 0;}
+  .player-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 14px; border:1px solid var(--line); border-radius:9px;
+    background:rgba(0,0,0,0.18);
+  }
+  .player-row .name{font-family:'Space Mono', monospace; font-size:13.5px;}
+  .player-row .remove{
+    background:none; border:none; color:rgba(246,239,225,0.4); font-size:16px; line-height:1;
+  }
+  .player-row .remove:hover{color:var(--ruby);}
+  .recent-title{font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(246,239,225,0.4); margin:20px 0 8px;}
+
+  /* DICE TRAY */
+  .tray{
+    border-radius:20px; padding:38px 30px;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.03), transparent 60%),
+      var(--felt-light);
+    border:1px solid var(--line);
+    box-shadow: inset 0 2px 18px rgba(0,0,0,0.35), var(--shadow);
+    position:relative;
+    margin-bottom:28px;
+  }
+  .tray::before{
+    content:""; position:absolute; inset:10px; border:1px solid rgba(205,165,72,0.18);
+    border-radius:13px; pointer-events:none;
+  }
+  .dice-row{
+    display:flex; gap:22px; justify-content:center; flex-wrap:wrap;
+    margin-bottom:30px;
+  }
+  .die{
+    width:86px; height:86px; border-radius:16px;
+    background:linear-gradient(160deg, #fffdf8, var(--ivory) 60%, #e8dfc8);
+    box-shadow: 0 10px 18px rgba(0,0,0,0.35), inset 0 -3px 5px rgba(0,0,0,0.08), inset 0 2px 3px rgba(255,255,255,0.8);
+    display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+    padding:14px; cursor:pointer; position:relative; transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .die:hover{ transform:translateY(-3px); }
+  .die.held{
+    box-shadow: 0 0 0 3px var(--gold), 0 10px 22px rgba(205,165,72,0.35);
+    transform:translateY(-6px);
+  }
+  .die.held::after{
+    content:"MAINTENU"; position:absolute; bottom:-20px; left:50%; transform:translateX(-50%);
+    font-family:'Space Mono', monospace; font-size:8.5px; letter-spacing:0.1em; color:var(--gold-bright); white-space:nowrap;
+  }
+  .die.rolling{ animation: tumble .55s ease; }
+  @keyframes tumble{
+    0%{transform:rotate(0deg) scale(1);}
+    30%{transform:rotate(-14deg) scale(1.05);}
+    60%{transform:rotate(10deg) scale(1.05);}
+    100%{transform:rotate(0deg) scale(1);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .die.rolling{ animation:none; }
+    .die{ transition:none; }
+  }
+  .pip{ width:13px; height:13px; border-radius:50%; background:var(--ink); align-self:center; justify-self:center; box-shadow: inset 0 1px 1px rgba(0,0,0,0.4); }
+  .die[data-empty="true"] .pip{visibility:hidden;}
+
+  .tray-controls{ display:flex; align-items:center; justify-content:center; gap:22px; flex-wrap:wrap; }
+  .roll-btn{
+    font-family:'Fraunces', serif; font-weight:700; font-size:18px;
+    padding:14px 34px; border-radius:40px; border:none;
+    background: linear-gradient(160deg, var(--gold-bright), var(--gold));
+    color:var(--ink); box-shadow:0 8px 18px rgba(205,165,72,0.35);
+    letter-spacing:0.01em; transition:transform .12s ease;
+  }
+  .roll-btn:hover:not(:disabled){transform:translateY(-2px);}
+  .roll-btn:disabled{opacity:.4; cursor:not-allowed; box-shadow:none;}
+  .rolls-left{
+    display:flex; gap:6px;
+  }
+  .pip-roll{
+    width:9px; height:9px; border-radius:50%; background:rgba(246,239,225,0.2); border:1px solid var(--line);
+  }
+  .pip-roll.used{background:var(--gold); border-color:var(--gold);}
+  .hint-txt{ text-align:center; font-size:12px; color:rgba(246,239,225,0.4); margin-top:14px; font-family:'Space Mono', monospace;}
+
+  /* CATEGORY PICKER (mobile / action grid) */
+  .cats-panel{ margin-top:10px; }
+  .cats-panel h3{
+    font-family:'Fraunces', serif; font-size:18px; font-style:italic; margin:0 0 12px; color:rgba(246,239,225,0.7);
+  }
+  .cats-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px;
+  }
+  .cat-card{
+    border:1px solid var(--line); border-radius:11px; padding:12px 14px;
+    background:rgba(0,0,0,0.18); text-align:left; color:var(--ivory);
+    display:flex; flex-direction:column; gap:4px; transition:all .12s ease;
+  }
+  .cat-card .cname{font-size:12.5px; font-weight:600;}
+  .cat-card .cscore{font-family:'Space Mono', monospace; font-size:19px; color:var(--gold-bright);}
+  .cat-card:hover:not(:disabled){ border-color:var(--gold); background:rgba(205,165,72,0.1); transform:translateY(-2px);}
+  .cat-card:disabled{ opacity:.3; cursor:not-allowed; }
+  .cat-card.zero .cscore{ color:rgba(246,239,225,0.3); }
+
+  .end-banner{
+    max-width:560px; margin:8vh auto; text-align:center; padding:40px;
+    border:1px solid var(--gold); border-radius:18px;
+    background:radial-gradient(ellipse at 50% 0%, rgba(205,165,72,0.14), rgba(0,0,0,0.15));
+    box-shadow:var(--shadow);
+  }
+  .end-banner .crown{font-size:34px; margin-bottom:10px;}
+  .end-banner h2{font-family:'Fraunces', serif; font-size:30px; margin:0 0 6px;}
+  .end-banner .score-final{font-family:'Space Mono', monospace; color:var(--gold-bright); font-size:15px; margin-bottom:20px;}
+  .end-list{ text-align:left; display:flex; flex-direction:column; gap:8px; margin-bottom:24px; }
+  .end-list .row{ display:flex; justify-content:space-between; font-family:'Space Mono', monospace; font-size:13px; padding:8px 12px; border:1px solid var(--line); border-radius:8px;}
+  .end-list .row.win{border-color:var(--gold); background:rgba(205,165,72,0.1);}
+
+  .empty-state{ text-align:center; padding:60px 20px; color:rgba(246,239,225,0.4); font-family:'Space Mono', monospace; font-size:12.5px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand"><span class="mark">Table du soir</span><span class="sub">Yahtzee</span></div>
+    <div class="score-title">Feuille de marque</div>
+    <div class="score-wrap" id="scoreWrap"></div>
+
+    <div class="players-panel">
+      <div class="panel-label">Joueurs connus</div>
+      <div class="known-players" id="knownPlayers"></div>
+      <button class="btn ghost new-game-btn" id="newGameBtn">↺ Nouvelle partie</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+/* ============================================================
+   YAHTZEE — logique du jeu
+   ============================================================ */
+
+const STORAGE_GAME_KEY = "yahtzee:current-game";
+const STORAGE_PROFILES_KEY = "yahtzee:profiles";
+
+const UPPER_CATS = [
+  {id:"aces", label:"As", hint:"Somme des 1", section:"upper", calc:d=>sumOf(d,1)},
+  {id:"twos", label:"Deux", hint:"Somme des 2", section:"upper", calc:d=>sumOf(d,2)},
+  {id:"threes", label:"Trois", hint:"Somme des 3", section:"upper", calc:d=>sumOf(d,3)},
+  {id:"fours", label:"Quatre", hint:"Somme des 4", section:"upper", calc:d=>sumOf(d,4)},
+  {id:"fives", label:"Cinq", hint:"Somme des 5", section:"upper", calc:d=>sumOf(d,5)},
+  {id:"sixes", label:"Six", hint:"Somme des 6", section:"upper", calc:d=>sumOf(d,6)},
+];
+const LOWER_CATS = [
+  {id:"threeKind", label:"Brelan", hint:"3 identiques → somme totale", section:"lower", calc:d=>hasNOfKind(d,3)?sumAll(d):0},
+  {id:"fourKind", label:"Carré", hint:"4 identiques → somme totale", section:"lower", calc:d=>hasNOfKind(d,4)?sumAll(d):0},
+  {id:"fullHouse", label:"Full", hint:"3 + 2 → 25 pts", section:"lower", calc:d=>isFullHouse(d)?25:0},
+  {id:"smallStraight", label:"Petite suite", hint:"4 consécutifs → 30 pts", section:"lower", calc:d=>hasStraight(d,4)?30:0},
+  {id:"largeStraight", label:"Grande suite", hint:"5 consécutifs → 40 pts", section:"lower", calc:d=>hasStraight(d,5)?40:0},
+  {id:"yahtzee", label:"Yahtzee", hint:"5 identiques → 50 pts", section:"lower", calc:d=>hasNOfKind(d,5)?50:0},
+  {id:"chance", label:"Chance", hint:"Somme totale", section:"lower", calc:d=>sumAll(d)},
+];
+const ALL_CATS = [...UPPER_CATS, ...LOWER_CATS];
+
+function sumOf(dice, face){ return dice.filter(v=>v===face).reduce((a,b)=>a+b,0); }
+function sumAll(dice){ return dice.reduce((a,b)=>a+b,0); }
+function counts(dice){ const c={}; dice.forEach(v=>c[v]=(c[v]||0)+1); return c; }
+function hasNOfKind(dice, n){ return Object.values(counts(dice)).some(c=>c>=n); }
+function isFullHouse(dice){
+  const c = Object.values(counts(dice)).sort();
+  return (c.length===2 && c[0]===2 && c[1]===3) || (c.length===1 && c[0]===5);
+}
+function hasStraight(dice, len){
+  const uniq = [...new Set(dice)].sort((a,b)=>a-b);
+  let run=1, best=1;
+  for(let i=1;i<uniq.length;i++){
+    if(uniq[i]===uniq[i-1]+1){ run++; best=Math.max(best,run); } else { run=1; }
+  }
+  return best>=len;
+}
+
+/* ---------- State ---------- */
+let state = null; // { players:[{id,name,scores:{}}], current, dice, held, rollsLeft, rollStarted, gameOver, yahtzeeBonus:{playerId:count} }
+let profiles = {}; // name -> {games, best, total}
+let setupNames = []; // temp list before game start
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+function newDice(){ return [1,1,1,1,1]; }
+
+function freshGame(names){
+  return {
+    players: names.map(n=>({id:uid(), name:n, scores:{}, bonusYz:0})),
+    current: 0,
+    dice: newDice(),
+    held: [false,false,false,false,false],
+    rollsLeft: 3,
+    rollStarted: false,
+    gameOver: false
+  };
+}
+
+/* ---------- Persistence ---------- */
+async function saveGame(){
+  try{ await window.storage.set(STORAGE_GAME_KEY, JSON.stringify(state), false); }catch(e){ console.error("save game failed", e); }
+}
+async function loadGame(){
+  try{
+    const r = await window.storage.get(STORAGE_GAME_KEY, false);
+    if(r && r.value) return JSON.parse(r.value);
+  }catch(e){ /* no saved game */ }
+  return null;
+}
+async function saveProfiles(){
+  try{ await window.storage.set(STORAGE_PROFILES_KEY, JSON.stringify(profiles), false); }catch(e){ console.error("save profiles failed", e); }
+}
+async function loadProfiles(){
+  try{
+    const r = await window.storage.get(STORAGE_PROFILES_KEY, false);
+    if(r && r.value) return JSON.parse(r.value);
+  }catch(e){ /* none yet */ }
+  return {};
+}
+function recordProfile(name, finalScore){
+  const p = profiles[name] || {games:0, best:0, total:0};
+  p.games += 1;
+  p.total += finalScore;
+  p.best = Math.max(p.best, finalScore);
+  profiles[name] = p;
+  saveProfiles();
+}
+
+/* ---------- Sound (tactile feedback, subtle) ---------- */
+let audioCtx;
+function clack(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    for(let i=0;i<3;i++){
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "square";
+      o.frequency.value = 180 + Math.random()*260;
+      g.gain.value = 0.05;
+      o.connect(g); g.connect(audioCtx.destination);
+      const start = t + i*0.045;
+      o.start(start);
+      g.gain.setValueAtTime(0.06, start);
+      g.gain.exponentialRampToValueAtTime(0.001, start+0.09);
+      o.stop(start+0.1);
+    }
+  }catch(e){ /* audio not available */ }
+}
+
+/* ---------- Rendering ---------- */
+const scoreWrapEl = document.getElementById("scoreWrap");
+const knownPlayersEl = document.getElementById("knownPlayers");
+const mainEl = document.getElementById("main");
+
+function upperSubtotal(player){
+  return UPPER_CATS.reduce((s,c)=> s + (player.scores[c.id] ?? 0), 0);
+}
+function upperBonus(player){
+  return upperSubtotal(player) >= 63 ? 35 : 0;
+}
+function lowerSubtotal(player){
+  return LOWER_CATS.reduce((s,c)=> s + (player.scores[c.id] ?? 0), 0);
+}
+function grandTotal(player){
+  return upperSubtotal(player) + upperBonus(player) + lowerSubtotal(player) + (player.bonusYz||0)*100;
+}
+
+function renderScoreTable(){
+  if(!state){ scoreWrapEl.innerHTML = `<div class="empty-state">Aucune partie en cours.<br>Ajoutez des joueurs pour commencer.</div>`; return; }
+  const players = state.players;
+  let html = `<table class="score-table"><thead><tr><th class="cat-col">Catégorie</th>`;
+  players.forEach((p,i)=>{
+    const active = (i===state.current && !state.gameOver) ? "active-col" : "";
+    html += `<th class="player-head ${active}" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  UPPER_CATS.forEach(cat=>{
+    html += `<tr><td class="cat-col">${cat.label}<span class="cat-hint">${cat.hint}</span></td>`;
+    players.forEach((p,i)=>{
+      const active = (i===state.current && !state.gameOver) ? "active-col" : "";
+      const v = p.scores[cat.id];
+      html += `<td class="cell ${active} ${v===undefined?'empty':''}">${v===undefined?'—':v}</td>`;
+    });
+    html += `</tr>`;
+  });
+  html += `<tr class="subtotal"><td class="cat-col">Sous-total</td>`;
+  players.forEach((p,i)=>{ const active=(i===state.current && !state.gameOver)?"active-col":""; html += `<td class="cell ${active}">${upperSubtotal(p)}</td>`; });
+  html += `</tr>`;
+  html += `<tr class="subtotal"><td class="cat-col">Bonus (≥63)</td>`;
+  players.forEach((p,i)=>{ const active=(i===state.current && !state.gameOver)?"active-col":""; html += `<td class="cell ${active}">${upperBonus(p)||'—'}</td>`; });
+  html += `</tr>`;
+  html += `<tr class="section-divider"><td colspan="${players.length+1}"></td></tr>`;
+
+  LOWER_CATS.forEach(cat=>{
+    html += `<tr><td class="cat-col">${cat.label}<span class="cat-hint">${cat.hint}</span></td>`;
+    players.forEach((p,i)=>{
+      const active = (i===state.current && !state.gameOver) ? "active-col" : "";
+      const v = p.scores[cat.id];
+      html += `<td class="cell ${active} ${v===undefined?'empty':''}">${v===undefined?'—':v}</td>`;
+    });
+    html += `</tr>`;
+  });
+  html += `<tr class="subtotal"><td class="cat-col">Bonus Yahtzee ×100</td>`;
+  players.forEach((p,i)=>{ const active=(i===state.current && !state.gameOver)?"active-col":""; html += `<td class="cell ${active}">${p.bonusYz? p.bonusYz+' × 100' : '—'}</td>`; });
+  html += `</tr>`;
+
+  html += `<tr class="total-row"><td class="cat-col">TOTAL</td>`;
+  players.forEach((p,i)=>{ const active=(i===state.current && !state.gameOver)?"active-col":""; html += `<td class="cell ${active}">${grandTotal(p)}</td>`; });
+  html += `</tr>`;
+
+  html += `</tbody></table>`;
+  scoreWrapEl.innerHTML = html;
+}
+
+function renderKnownPlayers(){
+  const names = Object.keys(profiles).sort((a,b)=> (profiles[b].best - profiles[a].best));
+  if(names.length===0){ knownPlayersEl.innerHTML = `<span style="font-size:11.5px;color:rgba(246,239,225,0.35);font-family:'Space Mono',monospace;">Aucun historique pour l'instant.</span>`; return; }
+  knownPlayersEl.innerHTML = names.map(n=>{
+    const p = profiles[n];
+    return `<span class="chip">${escapeHtml(n)} <span class="best">★ ${p.best}</span></span>`;
+  }).join("");
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+
+/* ---------- MAIN AREA rendering ---------- */
+function renderMain(){
+  if(!state){ renderSetup(); return; }
+  if(state.gameOver){ renderEndScreen(); return; }
+  renderGame();
+}
+
+function renderSetup(){
+  const knownNames = Object.keys(profiles).sort((a,b)=> (profiles[b].best-profiles[a].best));
+  mainEl.innerHTML = `
+    <div class="table-header">
+      <div>
+        <h1>Yahtzee</h1>
+        <div class="tagline">Cinq dés · trois lancers · treize catégories</div>
+      </div>
+    </div>
+    <div class="setup-card">
+      <h2>Composer la table</h2>
+      <p class="desc">Ajoutez les joueurs de cette partie. Leur historique et meilleur score sont conservés d'une session à l'autre.</p>
+      <div class="add-row">
+        <input id="nameInput" type="text" placeholder="Nom du joueur" maxlength="18" />
+        <button class="btn gold" id="addPlayerBtn">Ajouter</button>
+      </div>
+      ${knownNames.length ? `
+        <div class="recent-title">Joueurs récents</div>
+        <div class="known-players">
+          ${knownNames.map(n=>`<button class="chip" style="border:1px solid var(--line);cursor:pointer;" data-quickadd="${escapeHtml(n)}">${escapeHtml(n)} <span class="best">★ ${profiles[n].best}</span></button>`).join("")}
+        </div>` : ``}
+      <div class="player-list" id="playerList"></div>
+      <button class="btn gold" id="startBtn" style="width:100%;padding:13px;margin-top:8px;">Commencer la partie →</button>
+    </div>
+  `;
+  renderSetupList();
+
+  document.getElementById("addPlayerBtn").onclick = addSetupPlayer;
+  document.getElementById("nameInput").addEventListener("keydown", e=>{ if(e.key==="Enter") addSetupPlayer(); });
+  document.getElementById("startBtn").onclick = startGameFromSetup;
+  mainEl.querySelectorAll("[data-quickadd]").forEach(btn=>{
+    btn.onclick = ()=>{ const n = btn.getAttribute("data-quickadd"); if(!setupNames.includes(n)){ setupNames.push(n); renderSetupList(); } };
+  });
+}
+
+function renderSetupList(){
+  const listEl = document.getElementById("playerList");
+  if(!listEl) return;
+  if(setupNames.length===0){ listEl.innerHTML = `<div style="font-size:12px;color:rgba(246,239,225,0.35);font-family:'Space Mono',monospace;padding:6px 2px;">Aucun joueur ajouté pour l'instant.</div>`; return; }
+  listEl.innerHTML = setupNames.map((n,i)=>`
+    <div class="player-row">
+      <span class="name">${i+1}. ${escapeHtml(n)}</span>
+      <button class="remove" data-remove="${i}" aria-label="Retirer ${escapeHtml(n)}">✕</button>
+    </div>
+  `).join("");
+  listEl.querySelectorAll("[data-remove]").forEach(btn=>{
+    btn.onclick = ()=>{ setupNames.splice(+btn.getAttribute("data-remove"),1); renderSetupList(); };
+  });
+}
+
+function addSetupPlayer(){
+  const input = document.getElementById("nameInput");
+  const name = input.value.trim();
+  if(!name) return;
+  if(setupNames.includes(name)){ input.value=""; return; }
+  setupNames.push(name);
+  input.value = "";
+  renderSetupList();
+  input.focus();
+}
+
+function startGameFromSetup(){
+  if(setupNames.length===0){ shake(document.querySelector(".setup-card")); return; }
+  state = freshGame(setupNames);
+  setupNames = [];
+  saveGame();
+  renderAll();
+}
+
+function shake(el){
+  el.style.transition="transform .1s"; el.style.transform="translateX(-6px)";
+  setTimeout(()=>{ el.style.transform="translateX(6px)"; }, 90);
+  setTimeout(()=>{ el.style.transform="translateX(0)"; }, 180);
+}
+
+function renderGame(){
+  const player = state.players[state.current];
+  mainEl.innerHTML = `
+    <div class="table-header">
+      <div>
+        <h1>Yahtzee</h1>
+        <div class="tagline">Manche en cours</div>
+      </div>
+      <div class="turn-banner">
+        <span class="who">${escapeHtml(player.name)}</span>
+        <span class="rolls">au tour de jouer</span>
+      </div>
+    </div>
+
+    <div class="tray">
+      <div class="dice-row" id="diceRow"></div>
+      <div class="tray-controls">
+        <button class="roll-btn" id="rollBtn">${state.rollStarted ? "Relancer" : "Lancer les dés"}</button>
+        <div class="rolls-left" id="rollsLeft"></div>
+      </div>
+      <div class="hint-txt">${state.rollStarted ? "Cliquez un dé pour le maintenir avant de relancer." : "Lancez les dés pour commencer votre tour."}</div>
+    </div>
+
+    <div class="cats-panel">
+      <h3>Choisir une catégorie</h3>
+      <div class="cats-grid" id="catsGrid"></div>
+    </div>
+  `;
+
+  renderDice();
+  renderRollsLeft();
+  renderCatsGrid();
+
+  document.getElementById("rollBtn").onclick = doRoll;
+}
+
+function renderDice(){
+  const row = document.getElementById("diceRow");
+  if(!row) return;
+  row.innerHTML = state.dice.map((v,i)=>renderDieHtml(v,i)).join("");
+  row.querySelectorAll(".die").forEach(el=>{
+    el.onclick = ()=>{
+      if(!state.rollStarted) return;
+      const i = +el.getAttribute("data-i");
+      state.held[i] = !state.held[i];
+      saveGame();
+      renderDice();
+    };
+  });
+}
+
+function renderDieHtml(v, i){
+  const held = state.held[i] ? "held" : "";
+  const pipsMap = {
+    1:[0,0,0,0,1,0,0,0,0],
+    2:[1,0,0,0,0,0,0,0,1],
+    3:[1,0,0,0,1,0,0,0,1],
+    4:[1,0,1,0,0,0,1,0,1],
+    5:[1,0,1,0,1,0,1,0,1],
+    6:[1,0,1,1,0,1,1,0,1],
+  };
+  const pips = pipsMap[v] || pipsMap[1];
+  const pipHtml = pips.map(on=> on ? `<span class="pip"></span>` : `<span class="pip" style="visibility:hidden;"></span>`).join("");
+  return `<div class="die ${held}" data-i="${i}" tabindex="0" role="button" aria-pressed="${state.held[i]}" aria-label="Dé ${i+1}, valeur ${v}${state.held[i]?', maintenu':''}">${pipHtml}</div>`;
+}
+
+function renderRollsLeft(){
+  const el = document.getElementById("rollsLeft");
+  if(!el) return;
+  let html = "";
+  for(let i=0;i<3;i++){ html += `<span class="pip-roll ${i < (3-state.rollsLeft) ? 'used':''}"></span>`; }
+  el.innerHTML = html;
+  const btn = document.getElementById("rollBtn");
+  if(btn) btn.disabled = state.rollsLeft<=0;
+}
+
+function renderCatsGrid(){
+  const grid = document.getElementById("catsGrid");
+  if(!grid) return;
+  const player = state.players[state.current];
+  grid.innerHTML = ALL_CATS.map(cat=>{
+    const used = player.scores[cat.id] !== undefined;
+    const potential = state.rollStarted ? cat.calc(state.dice) : null;
+    const isZero = potential===0;
+    const label = used ? player.scores[cat.id] : (state.rollStarted ? potential : "—");
+    return `<button class="cat-card ${isZero && !used ? 'zero':''}" data-cat="${cat.id}" ${used || !state.rollStarted ? "disabled":""}>
+      <span class="cname">${cat.label}</span>
+      <span class="cscore">${label}</span>
+    </button>`;
+  }).join("");
+  grid.querySelectorAll("[data-cat]:not(:disabled)").forEach(btn=>{
+    btn.onclick = ()=> chooseCategory(btn.getAttribute("data-cat"));
+  });
+}
+
+function doRoll(){
+  if(state.rollsLeft<=0) return;
+  const row = document.getElementById("diceRow");
+  const dieEls = row.querySelectorAll(".die");
+  dieEls.forEach((el,i)=>{ if(!state.held[i]) el.classList.add("rolling"); });
+  clack();
+
+  let ticks = 0;
+  const maxTicks = 6;
+  const interval = setInterval(()=>{
+    ticks++;
+    state.dice = state.dice.map((v,i)=> state.held[i] ? v : (1+Math.floor(Math.random()*6)));
+    renderDice();
+    if(ticks>=maxTicks){
+      clearInterval(interval);
+      state.rollsLeft -= 1;
+      state.rollStarted = true;
+      saveGame();
+      renderRollsLeft();
+      renderCatsGrid();
+      const hint = document.querySelector(".hint-txt");
+      if(hint) hint.textContent = "Cliquez un dé pour le maintenir avant de relancer.";
+      const rollBtn = document.getElementById("rollBtn");
+      if(rollBtn) rollBtn.textContent = "Relancer";
+    }
+  }, 70);
+}
+
+function chooseCategory(catId){
+  const player = state.players[state.current];
+  const cat = ALL_CATS.find(c=>c.id===catId);
+  if(!cat || player.scores[catId] !== undefined) return;
+
+  let score = cat.calc(state.dice);
+
+  // Bonus Yahtzee : si un Yahtzee est déjà validé à 50 et qu'un nouveau Yahtzee est lancé
+  if(hasNOfKind(state.dice,5) && player.scores.yahtzee === 50){
+    player.bonusYz = (player.bonusYz||0) + 1;
+  }
+
+  player.scores[catId] = score;
+
+  advanceTurn();
+}
+
+function advanceTurn(){
+  const allDone = state.players.every(p => ALL_CATS.every(c => p.scores[c.id] !== undefined));
+  if(allDone){
+    endGame();
+    return;
+  }
+  state.current = (state.current + 1) % state.players.length;
+  state.dice = newDice();
+  state.held = [false,false,false,false,false];
+  state.rollsLeft = 3;
+  state.rollStarted = false;
+  saveGame();
+  renderAll();
+}
+
+function endGame(){
+  state.gameOver = true;
+  state.players.forEach(p=> recordProfile(p.name, grandTotal(p)));
+  saveGame();
+  renderAll();
+}
+
+function renderEndScreen(){
+  const ranked = [...state.players].sort((a,b)=> grandTotal(b)-grandTotal(a));
+  const winner = ranked[0];
+  mainEl.innerHTML = `
+    <div class="end-banner">
+      <div class="crown">♛</div>
+      <h2>${escapeHtml(winner.name)} remporte la partie</h2>
+      <div class="score-final">${grandTotal(winner)} points</div>
+      <div class="end-list">
+        ${ranked.map((p,i)=>`
+          <div class="row ${i===0?'win':''}">
+            <span>${i+1}. ${escapeHtml(p.name)}</span>
+            <span>${grandTotal(p)} pts</span>
+          </div>
+        `).join("")}
+      </div>
+      <button class="btn gold" id="playAgainBtn" style="padding:12px 28px;">Rejouer avec ces joueurs</button>
+    </div>
+  `;
+  document.getElementById("playAgainBtn").onclick = ()=>{
+    const names = state.players.map(p=>p.name);
+    state = freshGame(names);
+    saveGame();
+    renderAll();
+  };
+}
+
+/* ---------- Global controls ---------- */
+document.getElementById("newGameBtn").onclick = async ()=>{
+  state = null;
+  setupNames = [];
+  try{ await window.storage.delete(STORAGE_GAME_KEY, false); }catch(e){}
+  renderAll();
+};
+
+function renderAll(){
+  renderScoreTable();
+  renderKnownPlayers();
+  renderMain();
+}
+
+/* ---------- Init ---------- */
+(async function init(){
+  profiles = await loadProfiles();
+  const saved = await loadGame();
+  if(saved && !saved.gameOver){ state = saved; }
+  else if(saved && saved.gameOver){ state = null; }
+  renderAll();
+})();
+</script>
+</body>
+</html>
