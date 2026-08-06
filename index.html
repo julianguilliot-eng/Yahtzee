@@ -41,11 +41,40 @@
   .tray-3d canvas{ touch-action:none; } /* les gestes sur les dés ne doivent jamais déclencher de scroll/zoom iPad */
   button:focus-visible, input:focus-visible, [tabindex]:focus-visible{ outline:2px solid var(--gold-bright); outline-offset:2px; }
 
-  .app{ display:grid; grid-template-columns: 380px 1fr; height:100vh; max-width:1600px; margin:0 auto; }
-  @media (max-width: 920px){
-    .app{ grid-template-columns: 1fr; height:auto; }
-    .sidebar{order:2; position:static !important; max-height:none !important; height:auto !important;}
-    .main{order:1; height:78vh !important;}
+  .app{ display:grid; grid-template-columns: clamp(250px, 23vw, 380px) 1fr; height:100vh; max-width:1800px; margin:0 auto; position:relative; }
+
+  .sidebar-backdrop, .score-toggle-btn, .sidebar-close-btn{ display:none; }
+
+  /* ---------- Verrouillage de l'orientation : paysage uniquement ---------- */
+  .rotate-lock{ display:none; }
+  @media (orientation: portrait){
+    .app{ display:none; }
+    .rotate-lock{
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+      position:fixed; inset:0; height:100vh; background:var(--felt-dark); color:var(--ivory); z-index:100; text-align:center; padding:30px;
+    }
+    .rotate-lock .icon{ font-size:52px; animation:rotateHint 1.8s ease-in-out infinite; }
+    .rotate-lock p{ font-family:'Space Mono', monospace; font-size:13px; color:rgba(246,239,225,0.6); max-width:320px; margin:0; }
+    @keyframes rotateHint{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(-90deg); } }
+  }
+
+  /* écrans étroits mais en paysage (téléphone à plat) : on resserre l'interface plutôt que de la découper */
+  @media (max-width: 760px) and (orientation: landscape){
+    .app{ grid-template-columns: 210px 1fr; }
+    .hud-top{ top:10px; left:12px; right:12px; }
+    .hud-right{ gap:6px; }
+    .hud-title{ font-size:17px; }
+    .hud-round{ font-size:9px; padding:5px 9px; }
+    .fs-btn{ width:28px; height:28px; font-size:12px; }
+    .new-game-btn-top{ font-size:9px; padding:6px 9px; }
+    .hud-turn{ top:52px; padding:5px 14px 5px 12px; }
+    .hud-turn .who{ font-size:13px; }
+    .hud-turn .lbl{ display:none; }
+    .roll-btn{ font-size:14px; padding:10px 20px; }
+    .table-header h1{ font-size:22px; }
+    .setup-card{ padding:12px 16px; }
+    .setup-card h2{ font-size:18px; }
+    .score-table{ font-size:10px; }
   }
 
   /* ---------- SIDEBAR : TABLEAU DE SCORES ---------- */
@@ -116,6 +145,34 @@
   .end-list .row.win{border-color:var(--gold); background:rgba(205,165,72,0.1);}
   .empty-state{ text-align:center; padding:60px 20px; color:rgba(246,239,225,0.4); font-family:'Space Mono', monospace; font-size:12.5px;}
 
+  /* ---------- Sélecteur de jeu ---------- */
+  .game-select-grid{ display:flex; gap:16px; max-width:900px; margin:0 auto; flex-wrap:wrap; justify-content:center; }
+  .game-card{
+    flex:1 1 220px; max-width:260px; text-align:left; padding:22px 20px; border-radius:16px;
+    background:linear-gradient(160deg, rgba(0,0,0,0.25), rgba(0,0,0,0.1)); border:1px solid var(--line);
+    display:flex; flex-direction:column; gap:8px; transition:all .15s ease; box-shadow:var(--shadow);
+  }
+  .game-card:hover{ border-color:var(--gold); transform:translateY(-3px); }
+  .game-card-tag{ font-family:'Space Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-bright); }
+  .game-card-title{ font-family:'Fraunces', serif; font-weight:700; font-size:22px; }
+  .game-card-desc{ font-family:'Inter'; font-size:12.5px; color:rgba(246,239,225,0.6); line-height:1.4; }
+
+  /* ---------- Panneau 421 (jetons) ---------- */
+  .p421-phase{ font-family:'Space Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-bright); text-align:center; padding:8px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; background:rgba(0,0,0,0.2); }
+  .p421-pot{ display:block; font-size:9px; color:rgba(246,239,225,0.5); margin-top:2px; text-transform:none; letter-spacing:0; }
+  .p421-row{ display:flex; align-items:center; gap:10px; padding:10px 8px; border-bottom:1px solid rgba(205,165,72,0.12); }
+  .p421-row.active{ background:rgba(205,165,72,0.1); border-radius:8px; }
+  .p421-name{ flex:1 1 auto; font-family:'Inter'; font-weight:600; font-size:12.5px; color:var(--ivory); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .p421-count{ font-family:'Space Mono', monospace; font-size:13px; color:var(--gold-bright); font-weight:700; min-width:22px; text-align:right; }
+  .chip-stack{ position:relative; height:22px; flex-shrink:0; }
+  .chip{
+    position:absolute; width:15px; height:15px; border-radius:50%; left:0;
+    background:radial-gradient(circle at 32% 28%, var(--gold-bright), var(--gold) 55%, #8a6a24 100%);
+    border:1px solid #5f4614; box-shadow:0 1px 2px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(255,255,255,0.12);
+  }
+  .chip-extra{ font-family:'Space Mono', monospace; font-size:9.5px; color:rgba(246,239,225,0.55); align-self:center; }
+  .p421-log{ font-family:'Space Mono', monospace; font-size:9.5px; color:rgba(246,239,225,0.4); padding:8px 8px 2px; line-height:1.5; }
+
   /* ---------- TABLE 3D plein écran (sans cadre) ---------- */
   .game-screen{ position:absolute; inset:0; }
   .tray-3d{ position:absolute; inset:0; }
@@ -154,6 +211,11 @@
   }
   .roll-btn:hover:not(:disabled){transform:translateY(-2px);}
   .roll-btn:disabled{opacity:.4; cursor:not-allowed; box-shadow:none;}
+  .validate-btn{
+    background:transparent; color:var(--gold-bright); border:2px solid var(--gold);
+    box-shadow:none; display:inline-flex; align-items:center; justify-content:center;
+  }
+  .validate-btn:hover:not(:disabled){ background:rgba(205,165,72,0.12); }
   .rolls-left{ display:flex; gap:6px; }
   .pip-roll{ width:9px; height:9px; border-radius:50%; background:rgba(246,239,225,0.2); border:1px solid var(--line); }
   .pip-roll.used{background:var(--gold); border-color:var(--gold);}
@@ -161,9 +223,15 @@
 </head>
 <body>
 
-<div class="app">
+<div class="rotate-lock">
+  <div class="icon">📱</div>
+  <div class="hud-title">Tournez votre appareil</div>
+  <p>Ce jeu se joue uniquement en mode paysage, pour profiter pleinement du plateau et de la feuille de score.</p>
+</div>
+
+<div class="app" id="appRoot">
   <aside class="sidebar">
-    <div class="score-title">Scores</div>
+    <div class="score-title" id="scoreTitle">Scores</div>
     <div class="score-wrap" id="scoreWrap"></div>
   </aside>
 
@@ -190,6 +258,7 @@
         <div class="tray-controls">
           <div class="rolls-left" id="rollsLeft"></div>
           <button class="roll-btn" id="rollBtn">Lancer les dés</button>
+          <button class="roll-btn validate-btn" id="validateBtn" style="display:none;">Valider mon coup</button>
         </div>
       </div>
     </div>
@@ -197,6 +266,7 @@
     <div id="endScreen" class="screen-pad" style="display:none;"></div>
   </main>
 </div>
+
 
 <script>
 /* ============================================================
@@ -243,14 +313,69 @@ let state = null;
 let profiles = {};
 let setupNames = [];
 let viewingHome = false; // affiche l'accueil sans effacer une partie en cours
+let selectedGame = null; // 'yahtzee' | 'yatzy' | '421' — jeu choisi sur l'accueil
+
+const GAME_LABELS = { yahtzee:"Yahtzee", yatzy:"Yatzy", "421":"421" };
+function diceCountFor(game){ return game==="421" ? 3 : 5; }
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
-function newDice(){ return [1,1,1,1,1]; }
+function newDice(game){ return Array(diceCountFor(game)).fill(1); }
 
-function freshGame(names){
+/* ---------- Catégories Yatzy (en plus du Yahtzee existant, défini plus bas) ---------- */
+function highestPairValue(dice){
+  const c = counts(dice);
+  const vals = Object.keys(c).map(Number).filter(v=>c[v]>=2);
+  return vals.length ? Math.max(...vals) : 0;
+}
+function twoPairsSum(dice){
+  const c = counts(dice);
+  const vals = Object.keys(c).map(Number).filter(v=>c[v]>=2).sort((a,b)=>b-a);
+  if(vals.length<2) return 0;
+  return vals[0]*2 + vals[1]*2;
+}
+function nOfKindSum(dice, n){
+  const c = counts(dice);
+  const vals = Object.keys(c).map(Number).filter(v=>c[v]>=n).sort((a,b)=>b-a);
+  return vals.length ? vals[0]*n : 0;
+}
+function isFullHouseYatzy(dice){
+  const c = Object.values(counts(dice)).sort();
+  return (c.length===2 && c[0]===2 && c[1]===3) || (c.length===1 && c[0]===5);
+}
+const YATZY_LOWER_CATS = [
+  {id:"onePair", label:"Une paire", hint:"Somme de la paire la plus haute", calc:d=>highestPairValue(d)*2},
+  {id:"twoPairs", label:"Deux paires", hint:"Somme des deux paires", calc:d=>twoPairsSum(d)},
+  {id:"threeKindY", label:"Brelan", hint:"Somme des 3 dés seulement", calc:d=>nOfKindSum(d,3)},
+  {id:"fourKindY", label:"Carré", hint:"Somme des 4 dés seulement", calc:d=>nOfKindSum(d,4)},
+  {id:"smallStraight", label:"Petite suite", hint:"1-2-3-4-5 → 15 pts", calc:d=>[...d].sort().join(",")==="1,2,3,4,5"?15:0},
+  {id:"largeStraight", label:"Grande suite", hint:"2-3-4-5-6 → 20 pts", calc:d=>[...d].sort().join(",")==="2,3,4,5,6"?20:0},
+  {id:"fullHouseY", label:"Full", hint:"Somme des 5 dés", calc:d=>isFullHouseYatzy(d)?sumAll(d):0},
+  {id:"chanceY", label:"Chance", hint:"Somme des 5 dés", calc:d=>sumAll(d)},
+  {id:"yatzy", label:"Yatzy", hint:"5 identiques → somme + 50 pts", calc:d=>hasNOfKind(d,5)?sumAll(d)+50:0},
+];
+
+function gameCats(){
+  if(state && state.game==="yatzy") return { upper:UPPER_CATS, lower:YATZY_LOWER_CATS, bonusAmount:50 };
+  return { upper:UPPER_CATS, lower:LOWER_CATS, bonusAmount:35 }; // Yahtzee par défaut
+}
+function allCatsFor(){ const g=gameCats(); return [...g.upper, ...g.lower]; }
+
+function freshGame(names, game){
+  game = game || "yahtzee";
+  const n = diceCountFor(game);
+  if(game==="421"){
+    return {
+      game, players: names.map(nm=>({id:uid(), name:nm})),
+      tokens: names.map(()=>0), pot: 21, phase: "charge",
+      roundStarter: 0, order: names.map((_,i)=>i), turnIdx: 0, rollCap: null,
+      dice: Array(n).fill(1), held: Array(n).fill(false), rollsUsed: 0, rollStarted: false,
+      results: {}, lastRoundSummary: null, eliminatedOrder: [], gameOver: false,
+    };
+  }
   return {
-    players: names.map(n=>({id:uid(), name:n, scores:{}, bonusYz:0})),
-    current: 0, dice: newDice(), held: [false,false,false,false,false],
+    game,
+    players: names.map(nm=>({id:uid(), name:nm, scores:{}, bonusYz:0})),
+    current: 0, dice: newDice(game), held: Array(n).fill(false),
     rollsLeft: 3, rollStarted: false, gameOver: false
   };
 }
@@ -389,10 +514,11 @@ const turnWho = document.getElementById("turnWho");
 const hudRound = document.getElementById("hudRound");
 
 function upperSubtotal(player){ return UPPER_CATS.reduce((s,c)=> s + (player.scores[c.id] ?? 0), 0); }
-function upperBonus(player){ return upperSubtotal(player) >= 63 ? 35 : 0; }
-function lowerSubtotal(player){ return LOWER_CATS.reduce((s,c)=> s + (player.scores[c.id] ?? 0), 0); }
-function grandTotal(player){ return upperSubtotal(player) + upperBonus(player) + lowerSubtotal(player) + (player.bonusYz||0)*100; }
+function upperBonus(player){ return upperSubtotal(player) >= 63 ? gameCats().bonusAmount : 0; }
+function lowerSubtotal(player){ return gameCats().lower.reduce((s,c)=> s + (player.scores[c.id] ?? 0), 0); }
+function grandTotal(player){ return upperSubtotal(player) + upperBonus(player) + lowerSubtotal(player) + (state.game==="yahtzee" ? (player.bonusYz||0)*100 : 0); }
 function roundNumber(player){ return Object.keys(player.scores).length + 1; }
+function totalRounds(){ return allCatsFor().length; }
 
 function renderCategoryRow(cat){
   const players = state.players;
@@ -416,15 +542,19 @@ function renderCategoryRow(cat){
 }
 
 function renderScoreTable(){
+  const titleEl = document.getElementById("scoreTitle");
+  if(titleEl) titleEl.textContent = (state && state.game==="421") ? "Jetons" : "Scores";
   if(!state){ scoreWrapEl.innerHTML = `<div class="empty-state">Aucune partie en cours.<br>Ajoutez des joueurs pour commencer.</div>`; return; }
+  if(state.game==="421"){ render421Panel(); return; }
   const players = state.players;
+  const cats = gameCats();
   let html = `<table class="score-table"><thead><tr><th class="cat-col">Catégorie</th>`;
   players.forEach((p,i)=>{
     const active = (i===state.current && !state.gameOver) ? "active-col" : "";
     html += `<th class="player-head ${active}" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</th>`;
   });
   html += `</tr></thead><tbody>`;
-  UPPER_CATS.forEach(cat=>{ html += renderCategoryRow(cat); });
+  cats.upper.forEach(cat=>{ html += renderCategoryRow(cat); });
   html += `<tr class="subtotal"><td class="cat-col">Sous-total</td>`;
   players.forEach((p,i)=>{ const active=(i===state.current && !state.gameOver)?"active-col":""; html += `<td class="cell ${active}">${upperSubtotal(p)}</td>`; });
   html += `</tr>`;
@@ -432,10 +562,12 @@ function renderScoreTable(){
   players.forEach((p,i)=>{ const active=(i===state.current && !state.gameOver)?"active-col":""; html += `<td class="cell ${active}">${upperBonus(p)||'—'}</td>`; });
   html += `</tr>`;
   html += `<tr class="section-divider"><td colspan="${players.length+1}"></td></tr>`;
-  LOWER_CATS.forEach(cat=>{ html += renderCategoryRow(cat); });
-  html += `<tr class="subtotal"><td class="cat-col">Bonus Yahtzee ×100</td>`;
-  players.forEach((p,i)=>{ const active=(i===state.current && !state.gameOver)?"active-col":""; html += `<td class="cell ${active}">${p.bonusYz? p.bonusYz+' × 100' : '—'}</td>`; });
-  html += `</tr>`;
+  cats.lower.forEach(cat=>{ html += renderCategoryRow(cat); });
+  if(state.game==="yahtzee"){
+    html += `<tr class="subtotal"><td class="cat-col">Bonus Yahtzee ×100</td>`;
+    players.forEach((p,i)=>{ const active=(i===state.current && !state.gameOver)?"active-col":""; html += `<td class="cell ${active}">${p.bonusYz? p.bonusYz+' × 100' : '—'}</td>`; });
+    html += `</tr>`;
+  }
   html += `<tr class="total-row"><td class="cat-col">TOTAL</td>`;
   players.forEach((p,i)=>{ const active=(i===state.current && !state.gameOver)?"active-col":""; html += `<td class="cell ${active}">${grandTotal(p)}</td>`; });
   html += `</tr>`;
@@ -454,21 +586,62 @@ function showScreen(name){
   setupScreenEl.style.display = name==="setup" ? "block" : "none";
   gameScreenEl.style.display = name==="game" ? "block" : "none";
   endScreenEl.style.display = name==="end" ? "block" : "none";
-  if(name==="game"){ requestAnimationFrame(()=>{ ensureScene(); resizeRenderer(); sceneActive = true; }); }
+  if(name==="game"){
+    requestAnimationFrame(()=>{
+      DICE_COUNT = diceCountFor(state.game);
+      const wasRigCount = diceRigCount;
+      ensureScene();
+      if(wasRigCount !== diceRigCount){ restoreDiceFromState(); }
+      sceneActive = true;
+    });
+  }
   else { sceneActive = false; }
 }
 function renderMain(){
-  if(viewingHome || !state){ renderSetup(); showScreen("setup"); return; }
-  if(state.gameOver){ renderEndScreen(); showScreen("end"); return; }
-  renderGameHeader();
+  if(viewingHome || !state){
+    if(!selectedGame){ renderGameSelect(); showScreen("setup"); return; }
+    renderSetup(); showScreen("setup"); return;
+  }
+  if(state.gameOver){
+    if(state.game==="421") render421EndScreen(); else renderEndScreen();
+    showScreen("end"); return;
+  }
+  if(state.game==="421") render421Header(); else renderGameHeader();
   showScreen("game");
+}
+
+function renderGameSelect(){
+  const cards = [
+    {id:"yahtzee", title:"Yahtzee", desc:"5 dés · 3 lancers · 13 catégories. Le classique international.", tag:"5 dés"},
+    {id:"yatzy", title:"Yatzy", desc:"5 dés · 15 catégories, avec paires et un bonus Yatzy de 50 points.", tag:"5 dés"},
+    {id:"421", title:"421", desc:"3 dés · jeu de jetons traditionnel (charge / décharge), pas de feuille de catégories.", tag:"3 dés"},
+  ];
+  setupScreenEl.innerHTML = `
+    <div class="table-header"><div><h1>Table du soir</h1><div class="tagline">Choisissez un jeu de dés</div></div></div>
+    <div class="game-select-grid">
+      ${cards.map(c=>`
+        <button class="game-card" data-game="${c.id}">
+          <span class="game-card-tag">${c.tag}</span>
+          <span class="game-card-title">${c.title}</span>
+          <span class="game-card-desc">${c.desc}</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+  setupScreenEl.querySelectorAll("[data-game]").forEach(btn=>{
+    btn.onclick = ()=>{ selectedGame = btn.getAttribute("data-game"); renderAll(); };
+  });
 }
 
 function renderSetup(){
   const knownNames = Object.keys(profiles).sort((a,b)=> (profiles[b].best-profiles[a].best));
   const canResume = !!(state && !state.gameOver);
+  const gameLabel = GAME_LABELS[selectedGame] || "Yahtzee";
+  const gameTagline = selectedGame==="421" ? "3 dés · jeu de jetons" : (selectedGame==="yatzy" ? "5 dés · 15 catégories" : "5 dés · 13 catégories");
   setupScreenEl.innerHTML = `
-    <div class="table-header"><div><h1>Yahtzee</h1><div class="tagline">Cinq dés · trois lancers · treize catégories</div></div></div>
+    <div class="table-header"><div><h1>${gameLabel}</h1><div class="tagline">${gameTagline}</div></div>
+      <button class="btn ghost" id="backToGamesBtn" style="font-size:11px;padding:7px 12px;">← Changer de jeu</button>
+    </div>
     <div id="storageBadge" style="display:none; max-width:560px; margin:0 auto 16px; padding:11px 18px; border:1px solid #b5762f; background:rgba(181,118,47,0.15); border-radius:10px; font-size:12.5px; color:#f0c98a; text-align:center;"></div>
     <div class="setup-card" style="margin-bottom:10px;padding:16px 28px;">
       <div class="recent-title" style="margin:0 0 10px;">Sauvegarde</div>
@@ -482,12 +655,12 @@ function renderSetup(){
     </div>
     ${canResume ? `
     <div class="setup-card" style="margin-bottom:10px;padding:16px 28px;">
-      <p class="desc" style="margin:0 0 12px;">Une partie est toujours en cours (${state.players.map(p=>escapeHtml(p.name)).join(", ")}).</p>
+      <p class="desc" style="margin:0 0 12px;">Une partie de ${GAME_LABELS[state.game]||"Yahtzee"} est toujours en cours (${state.players.map(p=>escapeHtml(p.name)).join(", ")}).</p>
       <button class="btn gold" id="resumeBtn" style="width:100%;padding:12px;">▶ Reprendre la partie en cours</button>
     </div>` : ``}
     <div class="setup-card" id="composerCard">
       <h2>Composer la table</h2>
-      <p class="desc">Ajoutez les joueurs de cette partie. Leur historique et meilleur score sont conservés d'une session à l'autre.</p>
+      <p class="desc">Ajoutez les joueurs de cette partie. Leur historique est conservé d'une session à l'autre.</p>
       <div class="add-row">
         <input id="nameInput" type="text" placeholder="Nom du joueur" maxlength="18" />
         <button class="btn gold" id="addPlayerBtn">Ajouter</button>
@@ -509,8 +682,10 @@ function renderSetup(){
   document.getElementById("addPlayerBtn").onclick = addSetupPlayer;
   document.getElementById("nameInput").addEventListener("keydown", e=>{ if(e.key==="Enter") addSetupPlayer(); });
   document.getElementById("startBtn").onclick = startGameFromSetup;
+  document.getElementById("backToGamesBtn").onclick = ()=>{ selectedGame = null; renderAll(); };
   if(canResume){ document.getElementById("resumeBtn").onclick = ()=>{
     viewingHome=false;
+    selectedGame = state.game;
     renderAll();
     requestAnimationFrame(ensureSceneAndSync);
   }; }
@@ -545,9 +720,10 @@ function startGameFromSetup(){
   let changed = false;
   setupNames.forEach(n=>{ if(ensureProfile(n)) changed = true; });
   if(changed) saveProfiles();
-  state = freshGame(setupNames);
+  state = freshGame(setupNames, selectedGame);
   setupNames = [];
   viewingHome = false;
+  if(state.game==="421"){ start421Round(); }
   saveGame();
   resetDiceForNewTurn();
   renderAll();
@@ -561,12 +737,15 @@ function shake(el){
 function renderGameHeader(){
   const player = state.players[state.current];
   turnWho.textContent = player.name;
-  hudRound.textContent = `Manche ${Math.min(roundNumber(player),13)} / 13`;
+  hudRound.textContent = `Manche ${Math.min(roundNumber(player),totalRounds())} / ${totalRounds()}`;
   renderRollsLeft();
   updateHint();
   const btn = document.getElementById("rollBtn");
   btn.textContent = state.rollStarted ? "Relancer" : "Lancer les dés";
   btn.disabled = state.rollsLeft<=0 || rollInProgress;
+  btn.style.display = "";
+  const validateBtn = document.getElementById("validateBtn");
+  if(validateBtn) validateBtn.style.display = "none";
 }
 function updateHint(){
   const hint = document.getElementById("hintTxt");
@@ -585,19 +764,20 @@ function renderRollsLeft(){
 function chooseCategory(catId){
   if(!state || state.gameOver || !state.rollStarted) return;
   const player = state.players[state.current];
-  const cat = ALL_CATS.find(c=>c.id===catId);
+  const cat = allCatsFor().find(c=>c.id===catId);
   if(!cat || player.scores[catId] !== undefined) return;
   let score = cat.calc(state.dice);
-  if(hasNOfKind(state.dice,5) && player.scores.yahtzee === 50){ player.bonusYz = (player.bonusYz||0) + 1; }
+  if(state.game==="yahtzee" && hasNOfKind(state.dice,5) && player.scores.yahtzee === 50){ player.bonusYz = (player.bonusYz||0) + 1; }
   player.scores[catId] = score;
   advanceTurn();
 }
 function advanceTurn(){
-  const allDone = state.players.every(p => ALL_CATS.every(c => p.scores[c.id] !== undefined));
+  const cats = allCatsFor();
+  const allDone = state.players.every(p => cats.every(c => p.scores[c.id] !== undefined));
   if(allDone){ endGame(); return; }
   state.current = (state.current + 1) % state.players.length;
-  state.dice = newDice();
-  state.held = [false,false,false,false,false];
+  state.dice = newDice(state.game);
+  state.held = Array(diceCountFor(state.game)).fill(false);
   state.rollsLeft = 3;
   state.rollStarted = false;
   saveGame();
@@ -606,10 +786,219 @@ function advanceTurn(){
 }
 function endGame(){
   state.gameOver = true;
-  state.players.forEach(p=> recordProfile(p.name, grandTotal(p)));
+  if(state.game!=="421"){ state.players.forEach(p=> recordProfile(p.name, grandTotal(p))); }
   saveGame();
   renderAll();
 }
+
+/* ============================================================
+   421 — moteur de jeu (jetons, charge/décharge)
+   ============================================================ */
+const P421_COMBO = {
+  421: {label:"421", value:10},
+  as: {label:"Brelan d'As", value:7},
+  brelan: {label:"Brelan de", value:0}, // value calculé
+  suite456: {label:"Suite 4-5-6", value:2},
+  suite345: {label:"Suite 3-4-5", value:1},
+  suite234: {label:"Suite 2-3-4", value:1},
+  suite123: {label:"Suite 1-2-3", value:1},
+  points: {label:"Points", value:1},
+  nenette: {label:"Nénette (2-2-1)", value:1},
+};
+function evaluate421(dice){
+  const sorted = [...dice].sort((a,b)=>b-a);
+  const key = sorted.join(",");
+  const set = new Set(dice);
+  if(set.size===3 && dice.includes(4) && dice.includes(2) && dice.includes(1)){
+    return {rankNum:6000, label:"421", value:10};
+  }
+  const c = counts(dice);
+  const tripleVal = Object.keys(c).map(Number).find(v=>c[v]>=3);
+  if(tripleVal){
+    if(tripleVal===1) return {rankNum:5000, label:"Brelan d'As", value:7};
+    return {rankNum:4000+tripleVal, label:`Brelan de ${tripleVal}`, value:tripleVal};
+  }
+  if(key==="6,5,4") return {rankNum:3004, label:"Suite 4-5-6", value:2};
+  if(key==="5,4,3") return {rankNum:3003, label:"Suite 3-4-5", value:1};
+  if(key==="4,3,2") return {rankNum:3002, label:"Suite 2-3-4", value:1};
+  if(key==="3,2,1") return {rankNum:3001, label:"Suite 1-2-3", value:1};
+  if(key==="2,2,1") return {rankNum:1000, label:"Nénette", value:1};
+  const pointsRank = 2000 + sorted[0]*100 + sorted[1]*10 + sorted[2];
+  return {rankNum:pointsRank, label:`Points ${sorted.join("-")}`, value:1};
+}
+function compare421(a,b){ return a.rankNum - b.rankNum; } // >0 si a bat b
+
+function start421Round(){
+  const n = state.players.length;
+  state.order = Array.from({length:n}, (_,i)=> (state.roundStarter+i)%n);
+  state.turnIdx = 0;
+  state.rollCap = null;
+  state.results = {};
+  state.rollsUsed = 0;
+  state.rollStarted = false;
+  state.dice = Array(3).fill(1);
+  state.held = [false,false,false];
+}
+
+function currentPlayer421(){ return state.players[state.order[state.turnIdx]]; }
+
+function validate421Turn(){
+  if(!state || state.game!=="421" || !state.rollStarted) return;
+  const playerIdx = state.order[state.turnIdx];
+  state.results[playerIdx] = { dice:[...state.dice], combo: evaluate421(state.dice) };
+  if(state.turnIdx===0){ state.rollCap = state.rollsUsed; }
+  state.turnIdx += 1;
+  if(state.turnIdx >= state.order.length){
+    resolve421Round();
+  } else {
+    state.rollsUsed = 0;
+    state.rollStarted = false;
+    state.held = [false,false,false];
+    state.dice = Array(3).fill(1);
+    saveGame();
+    resetDiceForNewTurn();
+    renderAll();
+  }
+}
+
+function resolve421Round(){
+  const entries = state.order.map(pIdx => ({ pIdx, ...state.results[pIdx] }));
+  let best = entries[0], worst = entries[0];
+  entries.forEach(e=>{
+    if(compare421(e.combo, best.combo) > 0) best = e;
+    if(compare421(e.combo, worst.combo) < 0) worst = e;
+  });
+  const transferValue = best.combo.value;
+  const phaseAtStart = state.phase;
+  let transferAmount = 0;
+  if(phaseAtStart === "charge"){
+    transferAmount = Math.min(transferValue, state.pot);
+    state.tokens[worst.pIdx] += transferAmount;
+    state.pot -= transferAmount;
+  } else {
+    transferAmount = Math.min(transferValue, state.tokens[best.pIdx]);
+    state.tokens[best.pIdx] -= transferAmount;
+    state.tokens[worst.pIdx] += transferAmount;
+  }
+  state.lastRoundSummary = {
+    phase: phaseAtStart,
+    bestName: state.players[best.pIdx].name, bestCombo: best.combo.label,
+    worstName: state.players[worst.pIdx].name, worstCombo: worst.combo.label,
+    transferAmount,
+  };
+  state.roundStarter = worst.pIdx;
+
+  if(phaseAtStart==="charge" && state.pot<=0){ state.phase = "decharge"; }
+
+  if(state.phase==="decharge"){
+    state.players.forEach((p,i)=>{
+      if(state.tokens[i]===0 && !state.eliminatedOrder.includes(i)) state.eliminatedOrder.push(i);
+    });
+    const remaining = state.players.map((_,i)=>i).filter(i=> !state.eliminatedOrder.includes(i));
+    if(remaining.length<=1){
+      state.gameOver = true;
+      saveGame();
+      renderAll();
+      return;
+    }
+    // le prochain départ doit être un joueur encore en jeu
+    if(state.eliminatedOrder.includes(state.roundStarter)){
+      state.roundStarter = remaining[0];
+    }
+  }
+
+  start421Round();
+  saveGame();
+  resetDiceForNewTurn();
+  renderAll();
+}
+
+function render421Header(){
+  const player = currentPlayer421();
+  turnWho.textContent = player.name;
+  hudRound.innerHTML = state.phase==="charge"
+    ? `Charge <span class="p421-pot">Pot restant : ${state.pot}</span>`
+    : `Décharge <span class="p421-pot">Objectif : 0 jeton</span>`;
+  const rl = currentRollsLeft();
+  const el = document.getElementById("rollsLeft");
+  const cap = state.rollCap || 3;
+  if(el){
+    let html = "";
+    for(let i=0;i<cap;i++){ html += `<span class="pip-roll ${i < (cap-rl) ? 'used':''}"></span>`; }
+    el.innerHTML = html;
+  }
+  const hint = document.getElementById("hintTxt");
+  if(hint){
+    if(!state.rollStarted) hint.textContent = state.turnIdx===0
+      ? "Lancez (1 à 3 fois) : votre nombre de lancers fixera la règle pour toute la manche."
+      : `Lancez jusqu'à ${cap} fois, comme le premier joueur de cette manche.`;
+    else hint.innerHTML = "Touchez un dé pour le garder, relancez, ou validez votre combinaison.";
+  }
+  const rollBtn = document.getElementById("rollBtn");
+  const validateBtn = document.getElementById("validateBtn");
+  if(rollBtn){ rollBtn.textContent = state.rollStarted ? "Relancer" : "Lancer les dés"; rollBtn.disabled = rl<=0 || rollInProgress; rollBtn.style.display = rl<=0 && state.rollStarted ? "none" : ""; }
+  if(validateBtn){ validateBtn.style.display = state.rollStarted ? "inline-flex" : "none"; validateBtn.disabled = rollInProgress; }
+}
+
+function renderChipStack(count){
+  const visible = Math.min(count, 9);
+  const extra = count - visible;
+  let inner = "";
+  for(let i=0;i<visible;i++){
+    inner += `<div class="chip" style="bottom:${i*3}px; z-index:${i};"></div>`;
+  }
+  const width = 17 + Math.max(0, visible-1)*0;
+  return `<div class="chip-stack" style="width:16px; height:${18+visible*3}px;">${inner}</div>${extra>0?`<span class="chip-extra">+${extra}</span>`:""}`;
+}
+
+function render421Panel(){
+  const activeIdx = state.order[state.turnIdx];
+  let html = `<div class="p421-phase">${state.phase==="charge"?"Phase — Charge":"Phase — Décharge"}${state.phase==="charge"?`<span class="p421-pot">Pot restant : ${state.pot} jeton${state.pot>1?'s':''}</span>`:`<span class="p421-pot">Objectif : atteindre 0 jeton</span>`}</div>`;
+  state.players.forEach((p,i)=>{
+    const isOut = state.eliminatedOrder.includes(i);
+    const active = (i===activeIdx && !state.gameOver && !isOut) ? "active" : "";
+    html += `<div class="p421-row ${active}">
+      <span class="p421-name">${escapeHtml(p.name)}${isOut?" ✓":""}</span>
+      ${renderChipStack(state.tokens[i])}
+      <span class="p421-count">${state.tokens[i]}</span>
+    </div>`;
+  });
+  if(state.lastRoundSummary){
+    const s = state.lastRoundSummary;
+    html += `<div class="p421-log">Dernière manche — ${escapeHtml(s.bestName)} (${s.bestCombo}) bat ${escapeHtml(s.worstName)} (${s.worstCombo}) · ${s.transferAmount} jeton${s.transferAmount>1?'s':''} ${s.phase==="charge"?"pris au pot":"transféré(s)"}</div>`;
+  }
+  scoreWrapEl.innerHTML = html;
+}
+
+function render421EndScreen(){
+  const remaining = state.players.map((_,i)=>i).filter(i=> !state.eliminatedOrder.includes(i));
+  const ranking = [...state.eliminatedOrder, ...remaining]; // 1er éliminé = mieux classé, dernier restant = perdant
+  const loserIdx = ranking[ranking.length-1];
+  endScreenEl.innerHTML = `
+    <div class="end-banner">
+      <div class="crown">🎲</div>
+      <h2>${escapeHtml(state.players[loserIdx].name)} a perdu — tournée générale !</h2>
+      <div class="score-final">Partie de 421 terminée</div>
+      <div class="end-list">
+        ${ranking.map((pIdx,i)=>`<div class="row ${i===0?'win':''}"><span>${i+1}. ${escapeHtml(state.players[pIdx].name)}</span><span>${i===ranking.length-1?"perdant":"sorti"}</span></div>`).join("")}
+      </div>
+      <button class="btn gold" id="playAgainBtn" style="padding:12px 28px;">Rejouer avec ces joueurs</button>
+      <div style="margin-top:14px;">
+        <button class="btn ghost" id="newGameEndBtn" style="padding:8px 16px;font-size:11.5px;">↺ Nouvelle partie (autres joueurs)</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("playAgainBtn").onclick = ()=>{
+    const names = state.players.map(p=>p.name);
+    state = freshGame(names, "421");
+    start421Round();
+    saveGame();
+    resetDiceForNewTurn();
+    renderAll();
+  };
+  document.getElementById("newGameEndBtn").onclick = startNewGameFlow;
+}
+
 function renderEndScreen(){
   const ranked = [...state.players].sort((a,b)=> grandTotal(b)-grandTotal(a));
   const winner = ranked[0];
@@ -668,6 +1057,7 @@ async function importBackup(e){
     }
     if(data.game && typeof data.game === "object" && !data.game.gameOver){
       state = data.game;
+      selectedGame = state.game || "yahtzee";
       viewingHome = false;
       await saveGame();
     }
@@ -698,12 +1088,14 @@ let diceStates = [];
 let rollInProgress = false;
 let sceneActive = false;
 let sceneReady = false;
+let DICE_COUNT = 5;
 
 function ensureSceneAndSync(){
   if(!state || state.gameOver) return;
-  const wasReady = sceneReady;
+  DICE_COUNT = diceCountFor(state.game);
+  const wasRigCount = diceRigCount;
   ensureScene();
-  if(!wasReady){ restoreDiceFromState(); } // ne resynchronise que si la scène vient d'être créée
+  if(wasRigCount !== diceRigCount){ restoreDiceFromState(); } // ne resynchronise que si le rig vient d'être (re)créé
 }
 
 const GRAVITY = 15;
@@ -786,79 +1178,113 @@ function createRoundedBoxGeometry(size, radius, segments){
   return geo;
 }
 
+let sharedDieGeo, sharedPipGeo, sharedPipMat, sharedShadowGeo, sharedShadowTex, sharedHaloTex;
+let diceRigCount = -1;
+
 function ensureScene(){
-  if(sceneReady) return;
-  sceneReady = true;
-  const container = document.getElementById("tray3d");
-  const loading = document.getElementById("loading3d");
+  if(!sceneReady){
+    sceneReady = true;
+    const container = document.getElementById("tray3d");
+    const loading = document.getElementById("loading3d");
 
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
-  raycaster = new THREE.Raycaster();
-  clock = new THREE.Clock();
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+    raycaster = new THREE.Raycaster();
+    clock = new THREE.Clock();
 
-  renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-  container.insertBefore(renderer.domElement, loading);
-  if(loading) loading.remove();
+    renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    container.insertBefore(renderer.domElement, loading);
+    if(loading) loading.remove();
 
-  // lumières (uniquement pour les dés — le feutre reste en couleur plate, fidèle au fond de la page)
-  scene.add(new THREE.HemisphereLight(0xbfe8d4, 0x0b2a1f, 0.55));
-  const ambient = new THREE.AmbientLight(0xfff2d8, 0.32);
-  scene.add(ambient);
-  const dirLight = new THREE.DirectionalLight(0xfff7e6, 1.1);
-  dirLight.position.set(3.4, 7.5, 3.8);
-  scene.add(dirLight);
-  const rim = new THREE.PointLight(0xe9c874, 0.5, 14);
-  rim.position.set(-3.5, 2.6, -2.4);
-  scene.add(rim);
-  const rim2 = new THREE.PointLight(0x9fd8c0, 0.3, 14);
-  rim2.position.set(3.2, 2.2, 2.8);
-  scene.add(rim2);
+    // lumières (uniquement pour les dés — le feutre reste en couleur plate, fidèle au fond de la page)
+    scene.add(new THREE.HemisphereLight(0xbfe8d4, 0x0b2a1f, 0.55));
+    const ambient = new THREE.AmbientLight(0xfff2d8, 0.32);
+    scene.add(ambient);
+    const dirLight = new THREE.DirectionalLight(0xfff7e6, 1.1);
+    dirLight.position.set(3.4, 7.5, 3.8);
+    scene.add(dirLight);
+    const rim = new THREE.PointLight(0xe9c874, 0.5, 14);
+    rim.position.set(-3.5, 2.6, -2.4);
+    scene.add(rim);
+    const rim2 = new THREE.PointLight(0x9fd8c0, 0.3, 14);
+    rim2.position.set(3.2, 2.2, 2.8);
+    scene.add(rim2);
 
-  // feutre — couleur plate identique au fond de la page (non affectée par l'éclairage), surface infinie sans bordure
-  const feltMat = new THREE.MeshBasicMaterial({ color:0x0a2a20 });
-  const felt = new THREE.Mesh(new THREE.PlaneGeometry(BOUND_X*6, BOUND_Z*6), feltMat);
-  felt.rotation.x = -Math.PI/2;
-  scene.add(felt);
-  // grain de feutre très subtil, lui aussi en couleur plate pour rester fidèle
-  const speckleGeo = new THREE.CircleGeometry(0.02, 6);
-  const speckleMat = new THREE.MeshBasicMaterial({ color:0x0e3728, transparent:true, opacity:0.35 });
-  const speckleMesh = new THREE.InstancedMesh(speckleGeo, speckleMat, 140);
-  const dummy = new THREE.Object3D();
-  for(let i=0;i<140;i++){
-    dummy.position.set((Math.random()-0.5)*BOUND_X*2.6, 0.001, (Math.random()-0.5)*BOUND_Z*2.6);
-    dummy.rotation.x = -Math.PI/2;
-    dummy.updateMatrix();
-    speckleMesh.setMatrixAt(i, dummy.matrix);
+    // feutre — couleur plate identique au fond de la page (non affectée par l'éclairage), surface infinie sans bordure
+    const feltMat = new THREE.MeshBasicMaterial({ color:0x0a2a20 });
+    const felt = new THREE.Mesh(new THREE.PlaneGeometry(BOUND_X*6, BOUND_Z*6), feltMat);
+    felt.rotation.x = -Math.PI/2;
+    scene.add(felt);
+    // grain de feutre très subtil, lui aussi en couleur plate pour rester fidèle
+    const speckleGeo = new THREE.CircleGeometry(0.02, 6);
+    const speckleMat = new THREE.MeshBasicMaterial({ color:0x0e3728, transparent:true, opacity:0.35 });
+    const speckleMesh = new THREE.InstancedMesh(speckleGeo, speckleMat, 140);
+    const dummy = new THREE.Object3D();
+    for(let i=0;i<140;i++){
+      dummy.position.set((Math.random()-0.5)*BOUND_X*2.6, 0.001, (Math.random()-0.5)*BOUND_Z*2.6);
+      dummy.rotation.x = -Math.PI/2;
+      dummy.updateMatrix();
+      speckleMesh.setMatrixAt(i, dummy.matrix);
+    }
+    scene.add(speckleMesh);
+
+    // ressources partagées par tous les dés, quel que soit leur nombre
+    sharedShadowTex = createShadowTexture();
+    sharedHaloTex = createGlowTexture(0xe9c874);
+    sharedShadowGeo = new THREE.PlaneGeometry(1,1);
+    const dieSize = DIE_HALF*2;
+    sharedDieGeo = createRoundedBoxGeometry(dieSize, dieSize*0.16, 7);
+    const pipRadius = DIE_HALF*0.185;
+    sharedPipGeo = new THREE.SphereGeometry(pipRadius, 16, 16);
+    sharedPipMat = new THREE.MeshPhysicalMaterial({ color:0x201812, roughness:0.55, clearcoat:0.3, clearcoatRoughness:0.4 });
+
+    // ligne de séparation discrète entre la zone de lancer et la bande des dés gardés
+    const dividerX = (ROLL_MAX_X + HELD_X - HELD_STRIP_W/2) / 2;
+    const divider = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.012, BOUND_Z*2),
+      new THREE.MeshBasicMaterial({ color:0xcda548, transparent:true, opacity:0.28 })
+    );
+    divider.rotation.x = -Math.PI/2;
+    divider.position.set(dividerX, 0.004, 0);
+    scene.add(divider);
+
+    renderer.domElement.style.cursor = "grab";
+    renderer.domElement.addEventListener("pointerdown", onCanvasPointerDown);
+    window.addEventListener("resize", ()=>{ resizeRenderer(); });
+    const ro = new ResizeObserver(()=>resizeRenderer());
+    ro.observe(container);
+
+    requestAnimationFrame(animate);
   }
-  scene.add(speckleMesh);
+  buildDiceRig();
+  resizeRenderer();
+  positionHeldLabel();
+}
 
-  // ombre de contact factice sous chaque dé (dégradé radial), plus fine que la vraie shadow map et toujours nette
-  const shadowTex = createShadowTexture();
-  const haloTex = createGlowTexture(0xe9c874);
-  const shadowGeo = new THREE.PlaneGeometry(1,1);
+function buildDiceRig(){
+  if(diceRigCount === DICE_COUNT) return; // déjà le bon nombre de dés
+  // on retire les dés existants (changement de jeu : 5 dés Yahtzee/Yatzy ↔ 3 dés au 421)
+  diceStates.forEach(d=>{ scene.remove(d.mesh); scene.remove(d.shadowBlob); scene.remove(d.halo); });
+  diceStates = [];
 
-  // géométrie du dé (coins arrondis) + matériau façon résine
-  const dieSize = DIE_HALF*2;
-  const dieGeo = createRoundedBoxGeometry(dieSize, dieSize*0.16, 7);
   const pipRadius = DIE_HALF*0.185;
-  const pipGeo = new THREE.SphereGeometry(pipRadius, 16, 16);
-  const pipMat = new THREE.MeshPhysicalMaterial({ color:0x201812, roughness:0.55, clearcoat:0.3, clearcoatRoughness:0.4 });
+  const offsets = buildNeutralOffsets(DICE_COUNT);
+  const neutralX = offsets.map(o=>ROLL_CENTER_X+o.dx);
+  const neutralZ = offsets.map(o=>0.32+o.dz);
 
-  const neutralX = [ROLL_CENTER_X-1.15, ROLL_CENTER_X-0.58, ROLL_CENTER_X, ROLL_CENTER_X+0.58, ROLL_CENTER_X+1.15];
-  for(let i=0;i<5;i++){
+  for(let i=0;i<DICE_COUNT;i++){
     const dieMat = new THREE.MeshPhysicalMaterial({
       color:0xf7f1e4, roughness:0.28, metalness:0.02,
       clearcoat:0.65, clearcoatRoughness:0.18, reflectivity:0.5, emissive:0x000000
     });
-    const box = new THREE.Mesh(dieGeo, dieMat);
+    const box = new THREE.Mesh(sharedDieGeo, dieMat);
     const group = new THREE.Group();
     group.add(box);
 
-    const shadowBlob = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial({ map:shadowTex, transparent:true, depthWrite:false, opacity:0.4 }));
+    const shadowBlob = new THREE.Mesh(sharedShadowGeo, new THREE.MeshBasicMaterial({ map:sharedShadowTex, transparent:true, depthWrite:false, opacity:0.4 }));
     shadowBlob.rotation.x = -Math.PI/2;
     shadowBlob.scale.set(DIE_HALF*3.4, DIE_HALF*3.4, 1);
-    shadowBlob.position.set(neutralX[i], 0.003, 0);
+    shadowBlob.position.set(neutralX[i], 0.003, neutralZ[i]);
     scene.add(shadowBlob);
 
     FACE_DIRS.forEach(face=>{
@@ -871,7 +1297,7 @@ function ensureScene(){
         const pos = face.n.clone().multiplyScalar(DIE_HALF-embed)
           .add(face.u.clone().multiplyScalar(px))
           .add(face.v.clone().multiplyScalar(py));
-        const pip = new THREE.Mesh(pipGeo, pipMat);
+        const pip = new THREE.Mesh(sharedPipGeo, sharedPipMat);
         pip.position.copy(pos);
         group.add(pip);
       });
@@ -881,46 +1307,28 @@ function ensureScene(){
     scene.add(group);
 
     const halo = new THREE.Mesh(
-      shadowGeo,
-      new THREE.MeshBasicMaterial({ map:haloTex, transparent:true, depthWrite:false, opacity:0 })
+      sharedShadowGeo,
+      new THREE.MeshBasicMaterial({ map:sharedHaloTex, transparent:true, depthWrite:false, opacity:0 })
     );
     halo.rotation.x = -Math.PI/2;
-    halo.position.set(neutralX[i], 0.006, 0);
+    halo.position.set(neutralX[i], 0.006, neutralZ[i]);
     halo.visible = false;
     scene.add(halo);
 
     diceStates.push({
       mesh: group, material: dieMat, halo, shadowBlob,
-      pos: new THREE.Vector3(neutralX[i], DIE_HALF, 0),
+      pos: new THREE.Vector3(neutralX[i], DIE_HALF, neutralZ[i]),
       vel: new THREE.Vector3(0,0,0),
       angVel: new THREE.Vector3(0,0,0),
-      quat: new THREE.Quaternion(),
+      quat: staggeredQuatForValue(1, offsets[i].yaw),
       glideTarget: null,
       targetScale: 1, curScale: 1,
       held: false, settled: true, restTimer: 0, value: 1, age: 0,
     });
     diceStates[i].mesh.position.copy(diceStates[i].pos);
+    diceStates[i].mesh.quaternion.copy(diceStates[i].quat);
   }
-
-  // ligne de séparation discrète entre la zone de lancer et la bande des dés gardés
-  const dividerX = (ROLL_MAX_X + HELD_X - HELD_STRIP_W/2) / 2;
-  const divider = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.012, BOUND_Z*2),
-    new THREE.MeshBasicMaterial({ color:0xcda548, transparent:true, opacity:0.28 })
-  );
-  divider.rotation.x = -Math.PI/2;
-  divider.position.set(dividerX, 0.004, 0);
-  scene.add(divider);
-
-  renderer.domElement.style.cursor = "grab";
-  renderer.domElement.addEventListener("pointerdown", onCanvasPointerDown);
-  window.addEventListener("resize", ()=>{ resizeRenderer(); });
-  const ro = new ResizeObserver(()=>resizeRenderer());
-  ro.observe(container);
-  resizeRenderer();
-  positionHeldLabel();
-
-  requestAnimationFrame(animate);
+  diceRigCount = DICE_COUNT;
 }
 
 function positionHeldLabel(){
@@ -936,6 +1344,7 @@ function positionHeldLabel(){
   label.style.left = x+"px";
   label.style.top = y+"px";
 }
+
 
 function fitCamera(){
   const container = document.getElementById("tray3d");
@@ -1006,7 +1415,7 @@ function updateHeldVisual(i){
 
 function layoutHeldSlots(){
   const heldIdx = [];
-  for(let i=0;i<5;i++) if(state.held[i]) heldIdx.push(i);
+  for(let i=0;i<DICE_COUNT;i++) if(state.held[i]) heldIdx.push(i);
   const spacing = DIE_HALF*2.35;
   const topZ = -BOUND_Z + DIE_HALF*1.7;   // colonne ancrée en haut de l'écran (loin de la caméra)
   heldIdx.forEach((idx,slot)=>{
@@ -1036,13 +1445,27 @@ function canonicalQuatForValue(value){
   return new THREE.Quaternion().setFromRotationMatrix(m);
 }
 
-const NEUTRAL_OFFSETS = [
-  {dx:-2.85, dz:0.24, yaw:0.24},
-  {dx:-1.42, dz:-0.20, yaw:-0.32},
-  {dx:0.05, dz:0.28, yaw:0.15},
-  {dx:1.48, dz:-0.24, yaw:-0.20},
-  {dx:2.90, dz:0.16, yaw:0.28},
-];
+function buildNeutralOffsets(n){
+  // motif de base réutilisé et étendu au besoin : jamais deux dés alignés pile, ni trop serrés
+  const base = [
+    {dx:-2.85, dz:0.24, yaw:0.24},
+    {dx:-1.42, dz:-0.20, yaw:-0.32},
+    {dx:0.05, dz:0.28, yaw:0.15},
+    {dx:1.48, dz:-0.24, yaw:-0.20},
+    {dx:2.90, dz:0.16, yaw:0.28},
+  ];
+  if(n===5) return base;
+  // pour un autre nombre de dés (ex. 3 au 421), on répartit uniformément avec le même esprit décalé
+  const spacing = 1.55;
+  const out = [];
+  for(let i=0;i<n;i++){
+    const dx = (i-(n-1)/2)*spacing;
+    const dz = (i%2===0) ? 0.24 : -0.22;
+    const yaw = (i%2===0) ? 0.24 : -0.28;
+    out.push({dx, dz, yaw});
+  }
+  return out;
+}
 function staggeredQuatForValue(value, yaw){
   const q = canonicalQuatForValue(value);
   const yawQ = new THREE.Quaternion().setFromAxisAngle(UP, yaw);
@@ -1053,10 +1476,11 @@ function launchDie(i){
   const d = diceStates[i];
   d.held = false; d.settled = false; d.restTimer = 0; d.glideTarget = null; d.age = 0;
   updateHeldVisual(i);
-  const cellW = (ROLL_RIGHT-ROLL_LEFT)/5;
+  const cellW = (ROLL_RIGHT-ROLL_LEFT)/DICE_COUNT;
   const cx = ROLL_LEFT + cellW*(i+0.5);
   const x = cx + (Math.random()-0.5)*cellW*0.45;
-  const zBias = [0.42,-0.34,0.48,-0.42,0.30][i];   // chaque dé a aussi sa propre zone en profondeur
+  const zBiasPattern = [0.42,-0.34,0.48,-0.42,0.30];
+  const zBias = zBiasPattern[i % zBiasPattern.length];   // chaque dé a aussi sa propre zone en profondeur
   const z = zBias*BOUND_Z*0.65 + (Math.random()-0.5)*0.35;
   d.pos.set(x, 2.4 + Math.random()*0.9, z);
   d.vel.set((Math.random()-0.5)*1.6, -1.2-Math.random()*0.6, (Math.random()-0.5)*1.6);
@@ -1066,8 +1490,9 @@ function launchDie(i){
 
 function resetDiceForNewTurn(){
   if(!sceneReady) return;
+  const offsets = buildNeutralOffsets(DICE_COUNT);
   diceStates.forEach((d,i)=>{
-    const o = NEUTRAL_OFFSETS[i];
+    const o = offsets[i];
     d.held=false; d.settled=true; d.restTimer=0; d.value=1; d.glideTarget=null; d.targetQuat=null;
     d.pos.set(ROLL_CENTER_X+o.dx, DIE_HALF, 0.32+o.dz);
     d.vel.set(0,0,0); d.angVel.set(0,0,0);
@@ -1080,8 +1505,9 @@ function resetDiceForNewTurn(){
 
 function restoreDiceFromState(){
   if(!sceneReady || !state) return;
+  const offsets = buildNeutralOffsets(DICE_COUNT);
   diceStates.forEach((d,i)=>{
-    const o = NEUTRAL_OFFSETS[i];
+    const o = offsets[i];
     d.held = !!state.held[i];
     d.settled = true; d.restTimer = 0; d.glideTarget = null; d.targetQuat = null;
     d.value = state.dice[i];
@@ -1103,20 +1529,27 @@ function restoreDiceFromState(){
   diceStates.forEach(d=>{ if(d.glideTarget){ d.pos.copy(d.glideTarget); d.mesh.position.copy(d.pos); d.mesh.quaternion.copy(d.quat); d.glideTarget=null; } });
 }
 
+function currentRollsLeft(){
+  if(!state) return 0;
+  if(state.game==="421"){ const cap = state.rollCap || 3; return Math.max(0, cap - state.rollsUsed); }
+  return state.rollsLeft;
+}
+
 function doRoll(){
-  if(!state || state.rollsLeft<=0 || rollInProgress || !sceneReady) return;
+  if(!state || currentRollsLeft()<=0 || rollInProgress || !sceneReady) return;
   rollInProgress = true;
   const btn = document.getElementById("rollBtn");
   if(btn) btn.disabled = true;
   throwSound();
-  for(let i=0;i<5;i++){ if(!state.held[i]) launchDie(i); }
+  for(let i=0;i<DICE_COUNT;i++){ if(!state.held[i]) launchDie(i); }
 }
 document.getElementById("rollBtn").onclick = doRoll;
+document.getElementById("validateBtn").onclick = validate421Turn;
 
 function resolveCollisions(){
   for(let pass=0; pass<5; pass++){
-    for(let i=0;i<5;i++){
-      for(let j=i+1;j<5;j++){
+    for(let i=0;i<DICE_COUNT;i++){
+      for(let j=i+1;j<DICE_COUNT;j++){
         const a=diceStates[i], b=diceStates[j];
         if(a.held||b.held) continue;
         const dx=b.pos.x-a.pos.x, dz=b.pos.z-a.pos.z;
@@ -1229,11 +1662,18 @@ function checkRollComplete(){
   if(!allDone) return;
   rollInProgress = false;
   state.dice = diceStates.map(d=>d.value);
-  state.rollsLeft -= 1;
-  state.rollStarted = true;
-  saveGame();
-  renderScoreTable();
-  renderGameHeader();
+  if(state.game==="421"){
+    state.rollsUsed += 1;
+    state.rollStarted = true;
+    saveGame();
+    render421Header();
+  } else {
+    state.rollsLeft -= 1;
+    state.rollStarted = true;
+    saveGame();
+    renderScoreTable();
+    renderGameHeader();
+  }
 }
 
 function updateShadowBlobs(){
@@ -1355,7 +1795,7 @@ document.addEventListener("touchmove", (e)=>{
 (async function init(){
   profiles = await loadProfiles();
   const saved = await loadGame();
-  if(saved && !saved.gameOver){ state = saved; }
+  if(saved && !saved.gameOver){ state = saved; selectedGame = state.game || "yahtzee"; }
   else if(saved && saved.gameOver){ state = null; }
   renderAll();
   requestAnimationFrame(()=>{
