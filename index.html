@@ -118,7 +118,7 @@
 
   /* ---------- MAIN : plein écran, sans cadre ---------- */
   .main{ position:relative; height:100vh; overflow:hidden; }
-  .screen-pad{ padding:16px 30px; height:100%; overflow:hidden; display:flex; flex-direction:column; justify-content:center; align-items:stretch; }
+  .screen-pad{ padding:16px 30px calc(30px + env(safe-area-inset-bottom, 0px)); height:100%; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; display:flex; flex-direction:column; justify-content:flex-start; align-items:stretch; }
   .table-header{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px; flex-wrap:wrap; gap:14px; flex-shrink:0; }
   .table-header h1{ font-family:'Fraunces', serif; font-weight:700; font-size:30px; margin:0; letter-spacing:-0.01em; }
   .table-header .tagline{ font-family:'Space Mono', monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(246,239,225,0.4); margin-top:4px; }
@@ -1817,14 +1817,15 @@ window.addEventListener("keydown", (e)=>{
   if(isRefresh && state && !state.gameOver){ e.preventDefault(); }
 });
 
-// Empêche le geste "tirer pour actualiser" de Safari/iPad : la page entière ne doit jamais
+// Empêche le geste "tirer pour actualiser" de Safari/iPad/iPhone : la page entière ne doit jamais
 // pouvoir rebondir/défiler, sinon ce geste déclenche un rechargement et efface la partie.
-// On laisse passer les gestes uniquement à l'intérieur de la feuille de score (score-wrap),
-// qui peut avoir son propre défilement interne si beaucoup de joueurs sont présents.
+// On laisse passer les gestes à l'intérieur de la feuille de score et des écrans d'accueil/fin
+// (qui peuvent avoir leur propre défilement interne selon la taille d'écran) ; overscroll-behavior
+// empêche ce défilement interne de "déborder" vers la page et de déclencher l'actualisation.
 document.addEventListener("touchmove", (e)=>{
   let el = e.target;
   while(el && el !== document.body){
-    if(el.classList && el.classList.contains("score-wrap")) return;
+    if(el.classList && (el.classList.contains("score-wrap") || el.classList.contains("screen-pad"))) return;
     el = el.parentElement;
   }
   e.preventDefault();
