@@ -605,6 +605,7 @@ function showScreen(name){
       ensureScene();
       if(wasRigCount !== diceRigCount){ restoreDiceFromState(); }
       sceneActive = true;
+      setTimeout(resizeRenderer, 60); // filet de sécurité : recale la caméra si la taille initiale était instable
     });
   }
   else { sceneActive = false; }
@@ -1387,7 +1388,10 @@ function positionHeldLabel(){
 
 function fitCamera(){
   const container = document.getElementById("tray3d");
-  const w = container.clientWidth || 800, h = container.clientHeight || 500;
+  // repli robuste : si le conteneur n'a pas encore sa taille réelle (tout premier rendu), on estime
+  // une taille plausible plutôt que de laisser la caméra à sa position par défaut (dés géants à l'écran).
+  const w = container.clientWidth || Math.max(320, window.innerWidth - 300);
+  const h = container.clientHeight || Math.max(240, window.innerHeight - 20);
   const aspect = w/h;
   camera.aspect = aspect;
   const halfW = BOUND_X + 1.1, halfD = BOUND_Z + 1.1;
@@ -1404,9 +1408,12 @@ function resizeRenderer(){
   if(!renderer) return;
   const container = document.getElementById("tray3d");
   const w = container.clientWidth, h = container.clientHeight;
-  if(w<=0 || h<=0) return;
-  renderer.setSize(w, h, false);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  if(w>0 && h>0){
+    renderer.setSize(w, h, false);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  }
+  // la caméra doit TOUJOURS être positionnée, même si le conteneur n'a pas encore de taille valide
+  // (sinon elle reste à l'origine de la scène par défaut : les dés semblent alors énormes).
   fitCamera();
   positionHeldLabel();
 }
