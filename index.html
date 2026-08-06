@@ -172,6 +172,18 @@
   }
   .chip-extra{ font-family:'Space Mono', monospace; font-size:9.5px; color:rgba(246,239,225,0.55); align-self:center; }
   .p421-log{ font-family:'Space Mono', monospace; font-size:9.5px; color:rgba(246,239,225,0.4); padding:8px 8px 2px; line-height:1.5; }
+  .p421-section-title{ font-family:'Space Mono', monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(246,239,225,0.4); margin:10px 0 4px; padding:0 8px; }
+  .p421-turn-result{ display:flex; align-items:center; gap:7px; padding:6px 8px; border-bottom:1px solid rgba(205,165,72,0.08); }
+  .p421-turn-name{ flex:0 0 auto; font-family:'Inter'; font-size:11px; font-weight:600; color:var(--ivory); min-width:52px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .p421-turn-combo{ flex:1 1 auto; font-size:10px; color:var(--gold-bright); font-family:'Inter'; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .p421-turn-rolls{ font-size:8.5px; color:rgba(246,239,225,0.4); font-family:'Space Mono',monospace; white-space:nowrap; flex-shrink:0; }
+  .mini-dice-row{ display:flex; gap:2px; flex-shrink:0; }
+  .mini-die{
+    width:15px; height:15px; background:var(--ivory); border-radius:3px; flex-shrink:0;
+    display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:2px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.4);
+  }
+  .mini-pip{ width:2.4px; height:2.4px; border-radius:50%; background:var(--ink); align-self:center; justify-self:center; }
 
   /* ---------- TABLE 3D plein écran (sans cadre) ---------- */
   .game-screen{ position:absolute; inset:0; }
@@ -845,7 +857,7 @@ function currentPlayer421(){ return state.players[state.order[state.turnIdx]]; }
 function validate421Turn(){
   if(!state || state.game!=="421" || !state.rollStarted) return;
   const playerIdx = state.order[state.turnIdx];
-  state.results[playerIdx] = { dice:[...state.dice], combo: evaluate421(state.dice) };
+  state.results[playerIdx] = { dice:[...state.dice], combo: evaluate421(state.dice), rolls: state.rollsUsed };
   if(state.turnIdx===0){ state.rollCap = state.rollsUsed; }
   state.turnIdx += 1;
   if(state.turnIdx >= state.order.length){
@@ -951,9 +963,36 @@ function renderChipStack(count){
   return `<div class="chip-stack" style="width:16px; height:${18+visible*3}px;">${inner}</div>${extra>0?`<span class="chip-extra">+${extra}</span>`:""}`;
 }
 
+function miniDieHTML(value){
+  const layout = PIP_LAYOUTS[value] || PIP_LAYOUTS[1];
+  const dots = layout.map(on=> `<span class="mini-pip" style="visibility:${on?"visible":"hidden"}"></span>`).join("");
+  return `<div class="mini-die">${dots}</div>`;
+}
+function miniDiceRowHTML(diceArr){
+  return `<div class="mini-dice-row">${diceArr.map(v=>miniDieHTML(v)).join("")}</div>`;
+}
+
 function render421Panel(){
   const activeIdx = state.order[state.turnIdx];
   let html = `<div class="p421-phase">${state.phase==="charge"?"Phase — Charge":"Phase — Décharge"}${state.phase==="charge"?`<span class="p421-pot">Pot restant : ${state.pot} jeton${state.pot>1?'s':''}</span>`:`<span class="p421-pot">Objectif : atteindre 0 jeton</span>`}</div>`;
+
+  // mémoire des coups déjà joués dans la manche en cours — pour que tout le monde se souvienne
+  if(state.order && state.turnIdx > 0){
+    html += `<div class="p421-section-title">Cette manche</div>`;
+    for(let k=0;k<state.turnIdx;k++){
+      const pIdx = state.order[k];
+      const r = state.results[pIdx];
+      if(!r) continue;
+      html += `<div class="p421-turn-result">
+        <span class="p421-turn-name">${escapeHtml(state.players[pIdx].name)}</span>
+        ${miniDiceRowHTML(r.dice)}
+        <span class="p421-turn-combo">${r.combo.label}</span>
+        <span class="p421-turn-rolls">${r.rolls} lancer${r.rolls>1?"s":""}</span>
+      </div>`;
+    }
+    html += `<div class="p421-section-title">Jetons</div>`;
+  }
+
   state.players.forEach((p,i)=>{
     const isOut = state.eliminatedOrder.includes(i);
     const active = (i===activeIdx && !state.gameOver && !isOut) ? "active" : "";
