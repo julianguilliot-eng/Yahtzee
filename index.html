@@ -392,7 +392,7 @@ function freshGame(names, game){
       tokens: names.map(()=>0), pot: 21, phase: "charge",
       roundStarter: 0, order: names.map((_,i)=>i), turnIdx: 0, rollCap: null,
       dice: Array(n).fill(1), held: Array(n).fill(false), rollsUsed: 0, rollStarted: false,
-      results: {}, lastRoundSummary: null, eliminatedOrder: [], gameOver: false,
+      results: {}, lastRoundSummary: null, eliminatedOrder: [], gameOver: false, barrage: null,
     };
   }
   return {
@@ -896,25 +896,31 @@ function evaluate421(dice){
   const key = sorted.join(",");
   const set = new Set(dice);
   if(set.size===3 && dice.includes(4) && dice.includes(2) && dice.includes(1)){
-    return {rankNum:6000, label:"421", value:10};
+    return {rankNum:100000, label:"421", value:10};
   }
   const c = counts(dice);
   const tripleVal = Object.keys(c).map(Number).find(v=>c[v]>=3);
+  if(tripleVal===1){
+    return {rankNum:90000, label:"Brelan d'As", value:7};
+  }
+  // Au-delà de 421 et du Brelan d'As, le classement se fait D'ABORD par la valeur en jetons ;
+  // en cas d'égalité de valeur, un vrai Brelan bat une Fiche, qui bat elle-même une Suite/Points.
   if(tripleVal){
-    if(tripleVal===1) return {rankNum:5000, label:"Brelan d'As", value:7};
-    return {rankNum:4000+tripleVal, label:`Brelan de ${tripleVal}`, value:tripleVal};
+    // Brelan de 2 à 6 : rang = valeur*100 + 30 (le plus fort à valeur égale)
+    return {rankNum:tripleVal*100+30, label:`Brelan de ${tripleVal}`, value:tripleVal};
   }
-  if(key==="6,5,4") return {rankNum:3004, label:"Suite 4-5-6", value:2};
-  if(key==="5,4,3") return {rankNum:3003, label:"Suite 3-4-5", value:1};
-  if(key==="4,3,2") return {rankNum:3002, label:"Suite 2-3-4", value:1};
-  if(key==="3,2,1") return {rankNum:3001, label:"Suite 1-2-3", value:1};
-  if(key==="2,2,1") return {rankNum:1000, label:"Nénette", value:1};
-  const pointsRank = 2000 + sorted[0]*100 + sorted[1]*10 + sorted[2];
-  // Fiche : deux as (1-1) + un troisième dé différent → vaut la valeur de ce troisième dé
   if(c[1]===2){
+    // Fiche : deux as + un troisième dé → vaut ce troisième dé ; rang = valeur*100 + 20
     const thirdVal = dice.find(v=>v!==1);
-    return {rankNum:pointsRank, label:`Fiche (${thirdVal})`, value:thirdVal};
+    return {rankNum:thirdVal*100+20, label:`Fiche (${thirdVal})`, value:thirdVal};
   }
+  if(key==="2,2,1") return {rankNum:1, label:"Nénette", value:1}; // toujours la main la plus faible
+  if(key==="6,5,4") return {rankNum:2*100+13, label:"Suite 4-5-6", value:2};
+  if(key==="5,4,3") return {rankNum:1*100+12, label:"Suite 3-4-5", value:1};
+  if(key==="4,3,2") return {rankNum:1*100+11, label:"Suite 2-3-4", value:1};
+  if(key==="3,2,1") return {rankNum:1*100+10, label:"Suite 1-2-3", value:1};
+  // Points : valeur toujours 1 jeton, départagé entre "Points" par les chiffres obtenus
+  const pointsRank = 100 + (sorted[0]*100+sorted[1]*10+sorted[2])/1000;
   return {rankNum:pointsRank, label:`Points ${sorted.join("-")}`, value:1};
 }
 function compare421(a,b){ return a.rankNum - b.rankNum; } // >0 si a bat b
@@ -931,10 +937,27 @@ function start421Round(){
   state.held = [false,false,false];
 }
 
-function currentPlayer421(){ return state.players[state.order[state.turnIdx]]; }
+function currentPlayer421(){
+  if(state.barrage) return state.players[state.barrage.order[state.barrage.turnIdx]];
+  return state.players[state.order[state.turnIdx]];
+}
 
 function validate421Turn(){
   if(!state || state.game!=="421" || !state.rollStarted) return;
+
+  if(state.barrage){
+    const pIdx = state.barrage.order[state.barrage.turnIdx];
+    state.barrage.results[pIdx] = { dice:[...state.dice], combo: evaluate421(state.dice), rolls: state.rollsUsed };
+    state.barrage.turnIdx += 1;
+    if(state.barrage.turnIdx >= state.barrage.order.length){
+      resolveBarrage();
+    } else {
+      state.rollsUsed = 0; state.rollStarted = false; state.held = [false,false,false]; state.dice = Array(3).fill(1);
+      saveGame(); resetDiceForNewTurn(); renderAll();
+    }
+    return;
+  }
+
   const playerIdx = state.order[state.turnIdx];
   state.results[playerIdx] = { dice:[...state.dice], combo: evaluate421(state.dice), rolls: state.rollsUsed };
   if(state.turnIdx===0){ state.rollCap = state.rollsUsed; }
@@ -952,13 +975,59 @@ function validate421Turn(){
   }
 }
 
+/* ---- Barrage : en cas d'égalité stricte, seuls les joueurs concernés relancent, un seul coup ---- */
+function startBarrage(type, candidatePIdxs, pendingEntries){
+  state.barrage = { type, order:[...candidatePIdxs], results:{}, turnIdx:0, pendingEntries };
+  state.rollsUsed = 0; state.rollStarted = false; state.held = [false,false,false]; state.dice = Array(3).fill(1);
+  saveGame();
+  resetDiceForNewTurn();
+  renderAll();
+}
+
+function resolveBarrage(){
+  const b = state.barrage;
+  const subEntries = b.order.map(pIdx=>({ pIdx, ...b.results[pIdx] }));
+  let extreme = subEntries[0];
+  subEntries.forEach(e=>{
+    if(b.type==="worst"){ if(compare421(e.combo, extreme.combo) < 0) extreme = e; }
+    else { if(compare421(e.combo, extreme.combo) > 0) extreme = e; }
+  });
+  const stillTied = subEntries.filter(e => e.combo.rankNum === extreme.combo.rankNum);
+  const pending = b.pendingEntries;
+  if(stillTied.length > 1){
+    // toujours à égalité : on rejoue un nouveau barrage, uniquement entre eux
+    startBarrage(b.type, stillTied.map(e=>e.pIdx), pending);
+    return;
+  }
+  state.barrage = null;
+  finalizeRoundEntries(pending, { type:b.type, winnerPIdx:extreme.pIdx });
+}
+
 function resolve421Round(){
   const entries = state.order.map(pIdx => ({ pIdx, ...state.results[pIdx] }));
-  let best = entries[0], worst = entries[0];
-  entries.forEach(e=>{
-    if(compare421(e.combo, best.combo) > 0) best = e;
-    if(compare421(e.combo, worst.combo) < 0) worst = e;
-  });
+  finalizeRoundEntries(entries, null);
+}
+
+function finalizeRoundEntries(entries, resolved){
+  let bestRank = -Infinity, worstRank = Infinity;
+  entries.forEach(e=>{ if(e.combo.rankNum>bestRank) bestRank=e.combo.rankNum; if(e.combo.rankNum<worstRank) worstRank=e.combo.rankNum; });
+  const tiedWorst = entries.filter(e=>e.combo.rankNum===worstRank);
+  const tiedBest = entries.filter(e=>e.combo.rankNum===bestRank);
+
+  let worstEntry;
+  if(resolved && resolved.type==="worst"){ worstEntry = entries.find(e=>e.pIdx===resolved.winnerPIdx); }
+  else if(tiedWorst.length>1){ startBarrage("worst", tiedWorst.map(e=>e.pIdx), entries); return; }
+  else { worstEntry = tiedWorst[0]; }
+
+  let bestEntry;
+  if(resolved && resolved.type==="best"){ bestEntry = entries.find(e=>e.pIdx===resolved.winnerPIdx); }
+  else if(tiedBest.length>1){ startBarrage("best", tiedBest.map(e=>e.pIdx), entries); return; }
+  else { bestEntry = tiedBest[0]; }
+
+  applyRoundResult(entries, bestEntry, worstEntry);
+}
+
+function applyRoundResult(entries, best, worst){
   const transferValue = best.combo.value;
   const phaseAtStart = state.phase;
   let transferAmount = 0;
@@ -1009,12 +1078,17 @@ function render421Header(){
   const titleEl = document.getElementById("hudTitle");
   if(titleEl) titleEl.textContent = "421";
   turnWho.textContent = player.name;
-  hudRound.innerHTML = state.phase==="charge"
-    ? `Charge <span class="p421-pot">Pot restant : ${state.pot}</span>`
-    : `Décharge <span class="p421-pot">Objectif : 0 jeton</span>`;
+  if(state.barrage){
+    const label = state.barrage.type==="worst" ? "Barrage — plus mauvaise main" : "Barrage — meilleure main";
+    hudRound.innerHTML = `${label}<span class="p421-pot">Un seul lancer chacun</span>`;
+  } else {
+    hudRound.innerHTML = state.phase==="charge"
+      ? `Charge <span class="p421-pot">Pot restant : ${state.pot}</span>`
+      : `Décharge <span class="p421-pot">Objectif : 0 jeton</span>`;
+  }
   const rl = currentRollsLeft();
   const el = document.getElementById("rollsLeft");
-  const cap = state.rollCap || 3;
+  const cap = state.barrage ? 1 : (state.rollCap || 3);
   if(el){
     let html = "";
     for(let i=0;i<cap;i++){ html += `<span class="pip-roll ${i < (cap-rl) ? 'used':''}"></span>`; }
@@ -1022,10 +1096,17 @@ function render421Header(){
   }
   const hint = document.getElementById("hintTxt");
   if(hint){
-    if(!state.rollStarted) hint.textContent = state.turnIdx===0
-      ? "Lancez (1 à 3 fois) : votre nombre de lancers fixera la règle pour toute la manche."
-      : `Lancez jusqu'à ${cap} fois, comme le premier joueur de cette manche.`;
-    else hint.innerHTML = "Touchez un dé pour le garder, relancez, ou validez votre combinaison.";
+    if(state.barrage){
+      hint.textContent = !state.rollStarted
+        ? "Égalité stricte ! Un seul lancer pour départager."
+        : "Validez votre résultat du barrage.";
+    } else if(!state.rollStarted){
+      hint.textContent = state.turnIdx===0
+        ? "Lancez (1 à 3 fois) : votre nombre de lancers fixera la règle pour toute la manche."
+        : `Lancez jusqu'à ${cap} fois, comme le premier joueur de cette manche.`;
+    } else {
+      hint.innerHTML = "Touchez un dé pour le garder, relancez, ou validez votre combinaison.";
+    }
   }
   const rollBtn = document.getElementById("rollBtn");
   const validateBtn = document.getElementById("validateBtn");
@@ -1054,8 +1135,10 @@ function miniDiceRowHTML(diceArr){
 }
 
 function render421Panel(){
-  const activeIdx = state.order[state.turnIdx];
-  let html = `<div class="p421-phase">${state.phase==="charge"?"Phase — Charge":"Phase — Décharge"}${state.phase==="charge"?`<span class="p421-pot">Pot restant : ${state.pot} jeton${state.pot>1?'s':''}</span>`:`<span class="p421-pot">Objectif : atteindre 0 jeton</span>`}</div>`;
+  const activeIdx = state.barrage ? state.barrage.order[state.barrage.turnIdx] : state.order[state.turnIdx];
+  const phaseLabel = state.barrage ? (state.barrage.type==="worst" ? "Barrage — plus mauvaise main" : "Barrage — meilleure main") : (state.phase==="charge"?"Phase — Charge":"Phase — Décharge");
+  const potInfo = state.barrage ? `<span class="p421-pot">Un seul lancer chacun</span>` : (state.phase==="charge" ? `<span class="p421-pot">Pot restant : ${state.pot} jeton${state.pot>1?'s':''}</span>` : `<span class="p421-pot">Objectif : atteindre 0 jeton</span>`);
+  let html = `<div class="p421-phase">${phaseLabel}${potInfo}</div>`;
 
   // mémoire des coups déjà joués dans la manche en cours — pour que tout le monde se souvienne
   if(state.order && state.turnIdx > 0){
@@ -1664,7 +1747,10 @@ function restoreDiceFromState(){
 
 function currentRollsLeft(){
   if(!state) return 0;
-  if(state.game==="421"){ const cap = state.rollCap || 3; return Math.max(0, cap - state.rollsUsed); }
+  if(state.game==="421"){
+    const cap = state.barrage ? 1 : (state.rollCap || 3);
+    return Math.max(0, cap - state.rollsUsed);
+  }
   return state.rollsLeft;
 }
 
