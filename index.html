@@ -78,25 +78,25 @@
   }
 
   /* ---------- SIDEBAR : TABLEAU DE SCORES ---------- */
-  .sidebar{ position:sticky; top:0; align-self:start; height:100vh; padding:16px 14px 16px 18px; border-right:1px solid var(--line); background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05)); overflow-y:auto; display:flex; flex-direction:column; justify-content:flex-end; }
-  .score-title{ font-family:'Fraunces', serif; font-weight:600; font-style:italic; font-size:15px; letter-spacing:0.02em; color:var(--gold-bright); margin:0 0 8px 2px; flex-shrink:0; }
-  .score-wrap{ border:1px solid var(--line); border-radius:9px; overflow:auto; background:rgba(0,0,0,0.15); max-width:100%; flex:0 1 auto; max-height:calc(100vh - 40px); }
-  table.score-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  .sidebar{ position:sticky; top:0; align-self:start; height:100vh; padding:34px 14px 16px 18px; border-right:1px solid var(--line); background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.05)); overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; display:flex; flex-direction:column; justify-content:flex-start; }
+  .score-title{ font-family:'Fraunces', serif; font-weight:600; font-style:italic; font-size:17px; letter-spacing:0.02em; color:var(--gold-bright); margin:0 0 10px 2px; flex-shrink:0; }
+  .score-wrap{ border:1px solid var(--line); border-radius:9px; overflow:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; background:rgba(0,0,0,0.15); max-width:100%; flex:0 1 auto; max-height:calc(100vh - 60px); }
+  table.score-table{ width:100%; border-collapse:collapse; font-size:14.5px; }
   .score-table thead th{ position:sticky; top:0; z-index:2; background:var(--felt-dark); }
-  .score-table th, .score-table td{ padding:5px 5px; text-align:center; border-bottom:1px solid rgba(205,165,72,0.12); }
-  .score-table th.cat-col, .score-table td.cat-col{ text-align:left; font-family:'Inter'; font-weight:500; color:rgba(246,239,225,0.75); font-size:12px; white-space:nowrap; padding-left:9px; min-width:106px; }
-  .score-table .player-head{ font-family:'Space Mono', monospace; font-size:10.5px; letter-spacing:0.03em; color:var(--gold-bright); max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:7px 4px; }
+  .score-table th, .score-table td{ padding:7px 6px; text-align:center; border-bottom:1px solid rgba(205,165,72,0.12); }
+  .score-table th.cat-col, .score-table td.cat-col{ text-align:left; font-family:'Inter'; font-weight:600; color:rgba(246,239,225,0.8); font-size:14px; white-space:nowrap; padding-left:10px; min-width:96px; }
+  .score-table .player-head{ font-family:'Space Mono', monospace; font-size:12px; letter-spacing:0.03em; color:var(--gold-bright); max-width:76px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:8px 4px; }
   .score-table .player-head.active-col{ background:rgba(205,165,72,0.14); box-shadow: inset 0 2px 0 var(--gold), inset 0 -2px 0 var(--gold); }
-  .score-table td.cell{ font-family:'Space Mono', monospace; font-size:12.5px; color:var(--ivory); min-width:40px; position:relative; }
+  .score-table td.cell{ font-family:'Space Mono', monospace; font-size:14.5px; color:var(--ivory); min-width:42px; position:relative; }
   .score-table td.cell.active-col{ background:rgba(205,165,72,0.08); }
   .score-table td.cell.empty{ color:rgba(246,239,225,0.25); }
-  .score-table td.cell.choosable{ min-width:60px; padding-right:9px; }
+  .score-table td.cell.choosable{ min-width:62px; padding-right:9px; }
   .score-table tr.section-divider td{ border-bottom:1px solid var(--line); padding:0; height:1px; }
   .score-table tr.subtotal td, .score-table tr.total-row td{ background:#0d251c; font-weight:700; }
-  .score-table tr.total-row td{ position:sticky; bottom:0; z-index:2; background:#1c1305; color:var(--gold-bright); font-size:13.5px; border-top:1px solid var(--gold); box-shadow:0 -6px 10px -6px rgba(0,0,0,0.5); }
-  .cat-hint{ display:block; font-size:9px; color:rgba(246,239,225,0.32); font-weight:400; margin-top:0px; }
+  .score-table tr.total-row td{ position:sticky; bottom:0; z-index:2; background:#1c1305; color:var(--gold-bright); font-size:15.5px; border-top:1px solid var(--gold); box-shadow:0 -6px 10px -6px rgba(0,0,0,0.5); }
+  .cat-hint{ display:none; }
   .score-pick{
-    font-family:'Space Mono', monospace; font-weight:700; font-size:10.5px; padding:2px 7px; min-width:22px; border-radius:5px; border:1px solid var(--gold);
+    font-family:'Space Mono', monospace; font-weight:700; font-size:12px; padding:3px 8px; min-width:24px; border-radius:5px; border:1px solid var(--gold);
     background:linear-gradient(160deg, var(--gold-bright), var(--gold)); color:var(--ink); cursor:pointer; line-height:1.3;
     transform: translate(4px,-2px); box-shadow:0 3px 7px rgba(205,165,72,0.45); transition: transform .12s ease, box-shadow .12s ease; position:relative; z-index:3;
   }
@@ -158,32 +158,32 @@
   .game-card-desc{ font-family:'Inter'; font-size:12.5px; color:rgba(246,239,225,0.6); line-height:1.4; }
 
   /* ---------- Panneau 421 (jetons) ---------- */
-  .p421-phase{ font-family:'Space Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-bright); text-align:center; padding:8px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; background:rgba(0,0,0,0.2); }
-  .p421-pot{ display:block; font-size:9px; color:rgba(246,239,225,0.5); margin-top:2px; text-transform:none; letter-spacing:0; }
-  .p421-row{ display:flex; align-items:center; gap:10px; padding:10px 8px; border-bottom:1px solid rgba(205,165,72,0.12); }
+  .p421-phase{ font-family:'Space Mono', monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-bright); text-align:center; padding:10px; border:1px solid var(--line); border-radius:8px; margin-bottom:8px; background:rgba(0,0,0,0.2); }
+  .p421-pot{ display:block; font-size:11px; color:rgba(246,239,225,0.55); margin-top:3px; text-transform:none; letter-spacing:0; }
+  .p421-row{ display:flex; align-items:center; gap:10px; padding:12px 8px; border-bottom:1px solid rgba(205,165,72,0.12); }
   .p421-row.active{ background:rgba(205,165,72,0.1); border-radius:8px; }
-  .p421-name{ flex:1 1 auto; font-family:'Inter'; font-weight:600; font-size:12.5px; color:var(--ivory); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .p421-count{ font-family:'Space Mono', monospace; font-size:13px; color:var(--gold-bright); font-weight:700; min-width:22px; text-align:right; }
-  .chip-stack{ position:relative; height:22px; flex-shrink:0; }
+  .p421-name{ flex:1 1 auto; font-family:'Inter'; font-weight:600; font-size:15px; color:var(--ivory); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .p421-count{ font-family:'Space Mono', monospace; font-size:16px; color:var(--gold-bright); font-weight:700; min-width:26px; text-align:right; }
+  .chip-stack{ position:relative; height:24px; flex-shrink:0; }
   .chip{
-    position:absolute; width:15px; height:15px; border-radius:50%; left:0;
+    position:absolute; width:17px; height:17px; border-radius:50%; left:0;
     background:radial-gradient(circle at 32% 28%, var(--gold-bright), var(--gold) 55%, #8a6a24 100%);
     border:1px solid #5f4614; box-shadow:0 1px 2px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(255,255,255,0.12);
   }
-  .chip-extra{ font-family:'Space Mono', monospace; font-size:9.5px; color:rgba(246,239,225,0.55); align-self:center; }
-  .p421-log{ font-family:'Space Mono', monospace; font-size:9.5px; color:rgba(246,239,225,0.4); padding:8px 8px 2px; line-height:1.5; }
-  .p421-section-title{ font-family:'Space Mono', monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(246,239,225,0.4); margin:10px 0 4px; padding:0 8px; }
-  .p421-turn-result{ display:flex; align-items:center; gap:7px; padding:6px 8px; border-bottom:1px solid rgba(205,165,72,0.08); }
-  .p421-turn-name{ flex:0 0 auto; font-family:'Inter'; font-size:11px; font-weight:600; color:var(--ivory); min-width:52px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .p421-turn-combo{ flex:1 1 auto; font-size:10px; color:var(--gold-bright); font-family:'Inter'; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .p421-turn-rolls{ font-size:8.5px; color:rgba(246,239,225,0.4); font-family:'Space Mono',monospace; white-space:nowrap; flex-shrink:0; }
+  .chip-extra{ font-family:'Space Mono', monospace; font-size:11px; color:rgba(246,239,225,0.6); align-self:center; }
+  .p421-log{ font-family:'Space Mono', monospace; font-size:11px; color:rgba(246,239,225,0.45); padding:9px 8px 3px; line-height:1.5; }
+  .p421-section-title{ font-family:'Space Mono', monospace; font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(246,239,225,0.45); margin:12px 0 5px; padding:0 8px; }
+  .p421-turn-result{ display:flex; align-items:center; gap:8px; padding:8px; border-bottom:1px solid rgba(205,165,72,0.08); }
+  .p421-turn-name{ flex:0 0 auto; font-family:'Inter'; font-size:13px; font-weight:600; color:var(--ivory); min-width:58px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .p421-turn-combo{ flex:1 1 auto; font-size:12px; color:var(--gold-bright); font-family:'Inter'; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .p421-turn-rolls{ font-size:10px; color:rgba(246,239,225,0.45); font-family:'Space Mono',monospace; white-space:nowrap; flex-shrink:0; }
   .mini-dice-row{ display:flex; gap:2px; flex-shrink:0; }
   .mini-die{
-    width:15px; height:15px; background:var(--ivory); border-radius:3px; flex-shrink:0;
-    display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:2px;
+    width:18px; height:18px; background:var(--ivory); border-radius:3px; flex-shrink:0;
+    display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:2.5px;
     box-shadow:0 1px 2px rgba(0,0,0,0.4);
   }
-  .mini-pip{ width:2.4px; height:2.4px; border-radius:50%; background:var(--ink); align-self:center; justify-self:center; }
+  .mini-pip{ width:2.8px; height:2.8px; border-radius:50%; background:var(--ink); align-self:center; justify-self:center; }
 
   /* ---------- TABLE 3D plein écran (sans cadre) ---------- */
   .game-screen{ position:absolute; inset:0; }
@@ -288,12 +288,12 @@ const STORAGE_GAME_KEY = "yahtzee:current-game";
 const STORAGE_PROFILES_KEY = "yahtzee:profiles";
 
 const UPPER_CATS = [
-  {id:"aces", label:"As", hint:"Somme des 1", calc:d=>sumOf(d,1)},
-  {id:"twos", label:"Deux", hint:"Somme des 2", calc:d=>sumOf(d,2)},
-  {id:"threes", label:"Trois", hint:"Somme des 3", calc:d=>sumOf(d,3)},
-  {id:"fours", label:"Quatre", hint:"Somme des 4", calc:d=>sumOf(d,4)},
-  {id:"fives", label:"Cinq", hint:"Somme des 5", calc:d=>sumOf(d,5)},
-  {id:"sixes", label:"Six", hint:"Somme des 6", calc:d=>sumOf(d,6)},
+  {id:"aces", label:"1", hint:"Somme des 1", calc:d=>sumOf(d,1)},
+  {id:"twos", label:"2", hint:"Somme des 2", calc:d=>sumOf(d,2)},
+  {id:"threes", label:"3", hint:"Somme des 3", calc:d=>sumOf(d,3)},
+  {id:"fours", label:"4", hint:"Somme des 4", calc:d=>sumOf(d,4)},
+  {id:"fives", label:"5", hint:"Somme des 5", calc:d=>sumOf(d,5)},
+  {id:"sixes", label:"6", hint:"Somme des 6", calc:d=>sumOf(d,6)},
 ];
 const LOWER_CATS = [
   {id:"threeKind", label:"Brelan", hint:"3 identiques → somme totale", calc:d=>hasNOfKind(d,3)?sumAll(d):0},
@@ -534,7 +534,7 @@ function totalRounds(){ return allCatsFor().length; }
 
 function renderCategoryRow(cat){
   const players = state.players;
-  let html = `<tr><td class="cat-col">${cat.label}<span class="cat-hint">${cat.hint}</span></td>`;
+  let html = `<tr><td class="cat-col" title="${cat.hint}">${cat.label}</td>`;
   players.forEach((p,i)=>{
     const isActivePlayer = (i===state.current && !state.gameOver);
     const activeCls = isActivePlayer ? "active-col" : "";
@@ -1832,7 +1832,7 @@ window.addEventListener("keydown", (e)=>{
 document.addEventListener("touchmove", (e)=>{
   let el = e.target;
   while(el && el !== document.body){
-    if(el.classList && (el.classList.contains("score-wrap") || el.classList.contains("screen-pad"))) return;
+    if(el.classList && (el.classList.contains("score-wrap") || el.classList.contains("screen-pad") || el.classList.contains("sidebar"))) return;
     el = el.parentElement;
   }
   e.preventDefault();
