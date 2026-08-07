@@ -70,11 +70,11 @@
     .hud-turn{ top:52px; padding:5px 14px 5px 12px; }
     .hud-turn .who{ font-size:13px; }
     .hud-turn .lbl{ display:none; }
-    .roll-btn{ font-size:14px; padding:10px 20px; }
+    .roll-btn{ font-size:15px; padding:12px 26px; }
+    .validate-fab{ width:56px; height:56px; font-size:22px; right:16px; bottom:20px; }
     .table-header h1{ font-size:22px; }
     .setup-card{ padding:12px 16px; }
     .setup-card h2{ font-size:18px; }
-    .score-table{ font-size:10px; }
   }
 
   /* ---------- SIDEBAR : TABLEAU DE SCORES ---------- */
@@ -104,8 +104,11 @@
   .score-pick:active{ transform:translate(5px,-1px) scale(0.97); }
   .score-pick.zero{ background:rgba(0,0,0,0.3); color:rgba(246,239,225,0.55); border-color:var(--line); box-shadow:none;}
   .cell-ghost{ color:rgba(246,239,225,0.18); font-size:12px; }
-  .chip{ font-family:'Space Mono', monospace; font-size:10px; border:1px solid var(--line); background:rgba(0,0,0,0.2); color:rgba(246,239,225,0.7); padding:4px 9px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; }
+  .chip{ font-family:'Space Mono', monospace; font-size:10px; border:1px solid var(--line); background:rgba(0,0,0,0.2); color:rgba(246,239,225,0.7); padding:4px 4px 4px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; }
   .chip .best{color:var(--gold-bright);}
+  .chip-add{ cursor:pointer; padding:2px 0; }
+  .chip-icon{ width:18px; height:18px; border-radius:50%; background:rgba(255,255,255,0.06); border:none; color:rgba(246,239,225,0.45); font-size:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; }
+  .chip-icon:hover{ color:var(--gold-bright); background:rgba(205,165,72,0.18); }
   .known-players{ display:flex; flex-wrap:wrap; gap:6px; }
   .btn{ border:1px solid var(--line); background:rgba(0,0,0,0.2); color:var(--ivory); padding:7px 11px; border-radius:8px; font-size:11.5px; font-weight:600; transition:all .15s ease; letter-spacing:0.01em; }
   .btn:hover{border-color:var(--gold); background:rgba(205,165,72,0.1);}
@@ -156,6 +159,8 @@
   .game-card-tag{ font-family:'Space Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-bright); }
   .game-card-title{ font-family:'Fraunces', serif; font-weight:700; font-size:22px; }
   .game-card-desc{ font-family:'Inter'; font-size:12.5px; color:rgba(246,239,225,0.6); line-height:1.4; }
+  .game-card-resume{ margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .game-card-resume-label{ font-family:'Space Mono', monospace; font-size:10px; color:var(--gold-bright); line-height:1.4; display:block; }
 
   /* ---------- Panneau 421 (jetons) ---------- */
   .p421-phase{ font-family:'Space Mono', monospace; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-bright); text-align:center; padding:10px; border:1px solid var(--line); border-radius:8px; margin-bottom:8px; background:rgba(0,0,0,0.2); }
@@ -165,7 +170,7 @@
   .p421-name{ flex:1 1 auto; font-family:'Inter'; font-weight:600; font-size:15px; color:var(--ivory); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .p421-count{ font-family:'Space Mono', monospace; font-size:16px; color:var(--gold-bright); font-weight:700; min-width:26px; text-align:right; }
   .chip-stack{ position:relative; height:24px; flex-shrink:0; }
-  .chip{
+  .token-chip{
     position:absolute; width:17px; height:17px; border-radius:50%; left:0;
     background:radial-gradient(circle at 32% 28%, var(--gold-bright), var(--gold) 55%, #8a6a24 100%);
     border:1px solid #5f4614; box-shadow:0 1px 2px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(255,255,255,0.12);
@@ -216,18 +221,21 @@
   .hud-bottom{ position:absolute; bottom:26px; left:0; right:0; display:flex; flex-direction:column; align-items:center; gap:13px; z-index:6; pointer-events:none; }
   .hint-txt{ font-size:11.5px; color:rgba(246,239,225,0.55); font-family:'Space Mono', monospace; background:rgba(6,20,15,0.4); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); padding:6px 16px; border-radius:20px; text-align:center; }
   .hint-txt b{ color:var(--gold-bright); font-weight:700; }
-  .tray-controls{ pointer-events:auto; display:flex; align-items:center; gap:20px; background:rgba(6,20,15,0.4); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding:10px 16px 10px 22px; border-radius:50px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.35); }
+  .tray-controls{ pointer-events:auto; display:flex; align-items:center; gap:20px; background:rgba(6,20,15,0.4); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding:12px 20px 12px 26px; border-radius:50px; border:1px solid var(--line); box-shadow:0 10px 26px rgba(0,0,0,0.35); }
   .roll-btn{
-    font-family:'Fraunces', serif; font-weight:700; font-size:17px; padding:13px 30px; border-radius:40px; border:none;
+    font-family:'Fraunces', serif; font-weight:700; font-size:20px; padding:16px 38px; border-radius:44px; border:none;
     background: linear-gradient(160deg, var(--gold-bright), var(--gold)); color:var(--ink); box-shadow:0 8px 18px rgba(205,165,72,0.4); letter-spacing:0.01em; transition:transform .12s ease;
   }
   .roll-btn:hover:not(:disabled){transform:translateY(-2px);}
   .roll-btn:disabled{opacity:.4; cursor:not-allowed; box-shadow:none;}
-  .validate-btn{
-    background:transparent; color:var(--gold-bright); border:2px solid var(--gold);
-    box-shadow:none; display:inline-flex; align-items:center; justify-content:center;
+  .validate-fab{
+    position:absolute; right:26px; bottom:32px; z-index:6; pointer-events:auto;
+    width:68px; height:68px; border-radius:50%; background:transparent; color:var(--gold-bright);
+    border:2.5px solid var(--gold); display:flex; align-items:center; justify-content:center;
+    font-size:28px; box-shadow:0 10px 22px rgba(0,0,0,0.4); transition:transform .12s ease, background .12s ease;
   }
-  .validate-btn:hover:not(:disabled){ background:rgba(205,165,72,0.12); }
+  .validate-fab:hover:not(:disabled){ background:rgba(205,165,72,0.18); transform:translateY(-2px); }
+  .validate-fab:disabled{ opacity:.35; cursor:not-allowed; }
   .rolls-left{ display:flex; gap:6px; }
   .pip-roll{ width:9px; height:9px; border-radius:50%; background:rgba(246,239,225,0.2); border:1px solid var(--line); }
   .pip-roll.used{background:var(--gold); border-color:var(--gold);}
@@ -256,7 +264,7 @@
         <div class="hud-held" id="hudHeld">Dés gardés</div>
       </div>
       <div class="hud-top">
-        <div class="hud-title">Yahtzee</div>
+        <div class="hud-title" id="hudTitle">Yahtzee</div>
         <div class="hud-right">
           <div class="hud-round" id="hudRound">Manche 1 / 13</div>
           <button class="fs-btn" id="fullscreenBtn" title="Plein écran">⛶</button>
@@ -269,10 +277,10 @@
         <div class="hint-txt" id="hintTxt">Lancez les dés pour commencer votre tour.</div>
         <div class="tray-controls">
           <div class="rolls-left" id="rollsLeft"></div>
-          <button class="roll-btn" id="rollBtn">Lancer les dés</button>
-          <button class="roll-btn validate-btn" id="validateBtn" style="display:none;">Valider mon coup</button>
+          <button class="roll-btn" id="rollBtn">Lancer</button>
         </div>
       </div>
+      <button class="validate-fab" id="validateBtn" style="display:none;" title="Valider mon coup">✓</button>
     </div>
 
     <div id="endScreen" class="screen-pad" style="display:none;"></div>
@@ -284,8 +292,11 @@
 /* ============================================================
    YAHTZEE — logique de jeu, feuille de score, persistance
    ============================================================ */
-const STORAGE_GAME_KEY = "yahtzee:current-game";
+const STORAGE_GAME_KEY_BASE = "yahtzee:current-game";
 const STORAGE_PROFILES_KEY = "yahtzee:profiles";
+function gameStorageKey(game){ return `${STORAGE_GAME_KEY_BASE}:${game||"yahtzee"}`; }
+const RESUMABLE_GAMES = ["yahtzee","yatzy","421"];
+let savedGames = { yahtzee:null, yatzy:null, "421":null }; // dernière partie non-terminée de chaque jeu, en mémoire
 
 const UPPER_CATS = [
   {id:"aces", label:"1", hint:"Somme des 1", calc:d=>sumOf(d,1)},
@@ -441,10 +452,19 @@ async function storageWipe(key){
   try{ localStorage.removeItem(key); }catch(e){}
 }
 
-async function saveGame(){ await storagePut(STORAGE_GAME_KEY, JSON.stringify(state)); }
-async function loadGame(){
-  const v = await storageTake(STORAGE_GAME_KEY);
+async function saveGame(){
+  if(!state) return;
+  await storagePut(gameStorageKey(state.game), JSON.stringify(state));
+  savedGames[state.game] = state;
+}
+async function loadGameFor(game){
+  const v = await storageTake(gameStorageKey(game));
   return v ? JSON.parse(v) : null;
+}
+async function loadAllSavedGames(){
+  for(const g of RESUMABLE_GAMES){
+    try{ savedGames[g] = await loadGameFor(g); }catch(e){ savedGames[g] = null; }
+  }
 }
 async function saveProfiles(){ await storagePut(STORAGE_PROFILES_KEY, JSON.stringify(profiles)); }
 async function loadProfiles(){
@@ -632,23 +652,54 @@ function renderGameSelect(){
   setupScreenEl.innerHTML = `
     <div class="table-header"><div><h1>Table du soir</h1><div class="tagline">Choisissez un jeu de dés</div></div></div>
     <div class="game-select-grid">
-      ${cards.map(c=>`
-        <button class="game-card" data-game="${c.id}">
+      ${cards.map(c=>{
+        const saved = savedGames[c.id];
+        const resumable = !!(saved && !saved.gameOver);
+        return `
+        <div class="game-card">
           <span class="game-card-tag">${c.tag}</span>
           <span class="game-card-title">${c.title}</span>
           <span class="game-card-desc">${c.desc}</span>
-        </button>
-      `).join("")}
+          ${resumable ? `
+            <div class="game-card-resume">
+              <span class="game-card-resume-label">▶ En cours — ${saved.players.map(p=>escapeHtml(p.name)).join(", ")}</span>
+              <div style="display:flex; gap:6px; margin-top:9px;">
+                <button class="btn gold" data-resume-game="${c.id}" style="flex:1;font-size:11.5px;padding:9px;">Reprendre</button>
+                <button class="btn ghost" data-new-game="${c.id}" style="font-size:11.5px;padding:9px;">Nouvelle</button>
+              </div>
+            </div>
+          ` : `<button class="btn gold" data-play-game="${c.id}" style="margin-top:12px;padding:9px;">Jouer →</button>`}
+        </div>`;
+      }).join("")}
     </div>
   `;
-  setupScreenEl.querySelectorAll("[data-game]").forEach(btn=>{
-    btn.onclick = ()=>{ selectedGame = btn.getAttribute("data-game"); renderAll(); };
+  setupScreenEl.querySelectorAll("[data-play-game]").forEach(btn=>{
+    btn.onclick = ()=>{ selectedGame = btn.getAttribute("data-play-game"); renderAll(); };
+  });
+  setupScreenEl.querySelectorAll("[data-resume-game]").forEach(btn=>{
+    btn.onclick = ()=>{
+      const g = btn.getAttribute("data-resume-game");
+      selectedGame = g;
+      state = savedGames[g];
+      viewingHome = false;
+      renderAll();
+      requestAnimationFrame(ensureSceneAndSync);
+    };
+  });
+  setupScreenEl.querySelectorAll("[data-new-game]").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const g = btn.getAttribute("data-new-game");
+      if(!confirm("Abandonner la partie en cours de "+(GAME_LABELS[g]||g)+" pour en commencer une nouvelle ?")) return;
+      await storageWipe(gameStorageKey(g));
+      savedGames[g] = null;
+      selectedGame = g;
+      renderAll();
+    };
   });
 }
 
 function renderSetup(){
   const knownNames = Object.keys(profiles).sort((a,b)=> (profiles[b].best-profiles[a].best));
-  const canResume = !!(state && !state.gameOver);
   const gameLabel = GAME_LABELS[selectedGame] || "Yahtzee";
   const gameTagline = selectedGame==="421" ? "3 dés · jeu de jetons" : (selectedGame==="yatzy" ? "5 dés · 15 catégories" : "5 dés · 13 catégories");
   setupScreenEl.innerHTML = `
@@ -666,11 +717,6 @@ function renderSetup(){
       </div>
       <p class="desc" style="margin:12px 0 0; font-size:11.5px; opacity:0.75;">Le fichier garde toujours le même nom (<code>yahtzee-sauvegarde.json</code>) : "Enregistrer" l'écrase à chaque fois au même endroit, donc "Charger" le retrouve facilement — la plupart des sélecteurs de fichiers (dont celui d'iPad) proposent vos fichiers récents en premier.</p>
     </div>
-    ${canResume ? `
-    <div class="setup-card" style="margin-bottom:10px;padding:16px 28px;">
-      <p class="desc" style="margin:0 0 12px;">Une partie de ${GAME_LABELS[state.game]||"Yahtzee"} est toujours en cours (${state.players.map(p=>escapeHtml(p.name)).join(", ")}).</p>
-      <button class="btn gold" id="resumeBtn" style="width:100%;padding:12px;">▶ Reprendre la partie en cours</button>
-    </div>` : ``}
     <div class="setup-card" id="composerCard">
       <h2>Composer la table</h2>
       <p class="desc">Ajoutez les joueurs de cette partie. Leur historique est conservé d'une session à l'autre.</p>
@@ -684,7 +730,11 @@ function renderSetup(){
           ${knownNames.map(n=>{
             const p = profiles[n];
             const label = p.games>0 ? `★ ${p.best}` : `nouveau`;
-            return `<button class="chip" style="border:1px solid var(--line);cursor:pointer;" data-quickadd="${escapeHtml(n)}">${escapeHtml(n)} <span class="best">${label}</span></button>`;
+            return `<span class="chip">
+              <span class="chip-add" data-quickadd="${escapeHtml(n)}">${escapeHtml(n)} <span class="best">${label}</span></span>
+              <button class="chip-icon" data-rename="${escapeHtml(n)}" title="Renommer ${escapeHtml(n)}">✎</button>
+              <button class="chip-icon" data-delete="${escapeHtml(n)}" title="Supprimer ${escapeHtml(n)}">✕</button>
+            </span>`;
           }).join("")}
         </div>` : ``}
       <div class="player-list" id="playerList"></div>
@@ -696,19 +746,40 @@ function renderSetup(){
   document.getElementById("nameInput").addEventListener("keydown", e=>{ if(e.key==="Enter") addSetupPlayer(); });
   document.getElementById("startBtn").onclick = startGameFromSetup;
   document.getElementById("backToGamesBtn").onclick = ()=>{ selectedGame = null; renderAll(); };
-  if(canResume){ document.getElementById("resumeBtn").onclick = ()=>{
-    viewingHome=false;
-    selectedGame = state.game;
-    renderAll();
-    requestAnimationFrame(ensureSceneAndSync);
-  }; }
   document.getElementById("exportBtn").onclick = exportBackup;
   document.getElementById("importBtn").onclick = ()=> document.getElementById("importFile").click();
   document.getElementById("importFile").addEventListener("change", importBackup);
   setupScreenEl.querySelectorAll("[data-quickadd]").forEach(btn=>{
     btn.onclick = ()=>{ const n = btn.getAttribute("data-quickadd"); if(!setupNames.includes(n)){ setupNames.push(n); renderSetupList(); } };
   });
+  setupScreenEl.querySelectorAll("[data-rename]").forEach(btn=>{
+    btn.onclick = (e)=>{ e.stopPropagation(); renameProfile(btn.getAttribute("data-rename")); };
+  });
+  setupScreenEl.querySelectorAll("[data-delete]").forEach(btn=>{
+    btn.onclick = (e)=>{ e.stopPropagation(); deleteProfile(btn.getAttribute("data-delete")); };
+  });
   updateStorageBadge();
+}
+
+function renameProfile(oldName){
+  const newName = prompt("Nouveau nom pour "+oldName+" :", oldName);
+  if(!newName) return;
+  const trimmed = newName.trim();
+  if(!trimmed || trimmed===oldName) return;
+  if(profiles[trimmed]){ alert("Il existe déjà un joueur nommé "+trimmed+"."); return; }
+  profiles[trimmed] = profiles[oldName];
+  delete profiles[oldName];
+  const idx = setupNames.indexOf(oldName);
+  if(idx!==-1) setupNames[idx] = trimmed;
+  saveProfiles();
+  renderSetup();
+}
+function deleteProfile(name){
+  if(!confirm("Supprimer "+name+" des joueurs mémorisés ? (son historique de scores sera perdu)")) return;
+  delete profiles[name];
+  setupNames = setupNames.filter(n=>n!==name);
+  saveProfiles();
+  renderSetup();
 }
 function renderSetupList(){
   const listEl = document.getElementById("playerList");
@@ -749,12 +820,14 @@ function shake(el){
 
 function renderGameHeader(){
   const player = state.players[state.current];
+  const titleEl = document.getElementById("hudTitle");
+  if(titleEl) titleEl.textContent = GAME_LABELS[state.game] || "Yahtzee";
   turnWho.textContent = player.name;
   hudRound.textContent = `Manche ${Math.min(roundNumber(player),totalRounds())} / ${totalRounds()}`;
   renderRollsLeft();
   updateHint();
   const btn = document.getElementById("rollBtn");
-  btn.textContent = state.rollStarted ? "Relancer" : "Lancer les dés";
+  btn.textContent = state.rollStarted ? "Relancer" : "Lancer";
   btn.disabled = state.rollsLeft<=0 || rollInProgress;
   btn.style.display = "";
   const validateBtn = document.getElementById("validateBtn");
@@ -928,6 +1001,8 @@ function resolve421Round(){
 
 function render421Header(){
   const player = currentPlayer421();
+  const titleEl = document.getElementById("hudTitle");
+  if(titleEl) titleEl.textContent = "421";
   turnWho.textContent = player.name;
   hudRound.innerHTML = state.phase==="charge"
     ? `Charge <span class="p421-pot">Pot restant : ${state.pot}</span>`
@@ -949,8 +1024,8 @@ function render421Header(){
   }
   const rollBtn = document.getElementById("rollBtn");
   const validateBtn = document.getElementById("validateBtn");
-  if(rollBtn){ rollBtn.textContent = state.rollStarted ? "Relancer" : "Lancer les dés"; rollBtn.disabled = rl<=0 || rollInProgress; rollBtn.style.display = rl<=0 && state.rollStarted ? "none" : ""; }
-  if(validateBtn){ validateBtn.style.display = state.rollStarted ? "inline-flex" : "none"; validateBtn.disabled = rollInProgress; }
+  if(rollBtn){ rollBtn.textContent = state.rollStarted ? "Relancer" : "Lancer"; rollBtn.disabled = rl<=0 || rollInProgress; rollBtn.style.display = rl<=0 && state.rollStarted ? "none" : ""; }
+  if(validateBtn){ validateBtn.style.display = state.rollStarted ? "" : "none"; validateBtn.disabled = rollInProgress; }
 }
 
 function renderChipStack(count){
@@ -958,7 +1033,7 @@ function renderChipStack(count){
   const extra = count - visible;
   let inner = "";
   for(let i=0;i<visible;i++){
-    inner += `<div class="chip" style="bottom:${i*3}px; z-index:${i};"></div>`;
+    inner += `<div class="token-chip" style="bottom:${i*3}px; z-index:${i};"></div>`;
   }
   const width = 17 + Math.max(0, visible-1)*0;
   return `<div class="chip-stack" style="width:16px; height:${18+visible*3}px;">${inner}</div>${extra>0?`<span class="chip-extra">+${extra}</span>`:""}`;
@@ -1068,10 +1143,10 @@ function renderEndScreen(){
 function exportBackup(){
   const payload = {
     kind: "yahtzee-table-du-soir-backup",
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     profiles,
-    game: state,
+    games: savedGames,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -1095,16 +1170,23 @@ async function importBackup(e){
       profiles = data.profiles;
       await saveProfiles();
     }
-    if(data.game && typeof data.game === "object" && !data.game.gameOver){
-      state = data.game;
-      selectedGame = state.game || "yahtzee";
-      viewingHome = false;
-      await saveGame();
+    if(data.games && typeof data.games === "object"){
+      // format actuel : une sauvegarde par jeu
+      for(const g of RESUMABLE_GAMES){
+        const saved = data.games[g];
+        if(saved && typeof saved === "object" && !saved.gameOver){
+          savedGames[g] = saved;
+          await storagePut(gameStorageKey(g), JSON.stringify(saved));
+        }
+      }
+    } else if(data.game && typeof data.game === "object" && !data.game.gameOver){
+      // ancien format (une seule partie exportée) — compatibilité
+      const g = data.game.game || "yahtzee";
+      savedGames[g] = data.game;
+      await storagePut(gameStorageKey(g), JSON.stringify(data.game));
     }
+    state = null; selectedGame = null; viewingHome = true;
     renderAll();
-    requestAnimationFrame(()=>{
-      ensureSceneAndSync();
-    });
   }catch(err){
     console.error("Import de sauvegarde impossible :", err);
     alert("Ce fichier ne semble pas être une sauvegarde Yahtzee valide.");
@@ -1112,12 +1194,12 @@ async function importBackup(e){
 }
 
 async function startNewGameFlow(){
-  state = null; setupNames = []; viewingHome = false;
-  await storageWipe(STORAGE_GAME_KEY);
+  if(state){ await storageWipe(gameStorageKey(state.game)); savedGames[state.game] = null; }
+  state = null; setupNames = []; viewingHome = false; selectedGame = null;
   renderAll();
 }
 document.getElementById("newGameBtn").onclick = startNewGameFlow;
-document.getElementById("homeBtn").onclick = ()=>{ viewingHome = true; renderAll(); };
+document.getElementById("homeBtn").onclick = ()=>{ viewingHome = true; selectedGame = null; renderAll(); };
 function renderAll(){ renderScoreTable(); renderMain(); }
 
 /* ============================================================
@@ -1841,13 +1923,8 @@ document.addEventListener("touchmove", (e)=>{
 /* ---------- Init ---------- */
 (async function init(){
   profiles = await loadProfiles();
-  const saved = await loadGame();
-  if(saved && !saved.gameOver){ state = saved; selectedGame = state.game || "yahtzee"; }
-  else if(saved && saved.gameOver){ state = null; }
+  await loadAllSavedGames();
   renderAll();
-  requestAnimationFrame(()=>{
-    ensureSceneAndSync();
-  });
 })();
 </script>
 </body>
