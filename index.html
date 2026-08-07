@@ -910,6 +910,11 @@ function evaluate421(dice){
   if(key==="3,2,1") return {rankNum:3001, label:"Suite 1-2-3", value:1};
   if(key==="2,2,1") return {rankNum:1000, label:"Nénette", value:1};
   const pointsRank = 2000 + sorted[0]*100 + sorted[1]*10 + sorted[2];
+  // Fiche : deux as (1-1) + un troisième dé différent → vaut la valeur de ce troisième dé
+  if(c[1]===2){
+    const thirdVal = dice.find(v=>v!==1);
+    return {rankNum:pointsRank, label:`Fiche (${thirdVal})`, value:thirdVal};
+  }
   return {rankNum:pointsRank, label:`Points ${sorted.join("-")}`, value:1};
 }
 function compare421(a,b){ return a.rankNum - b.rankNum; } // >0 si a bat b
